@@ -103,7 +103,7 @@ public final class RewindHandler {
             restore(le, s);
             dq.clear();
         }
-        lv.playSound(null, p.blockPosition(), SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.PLAYERS, 1.5F, 0.6F);
+        lv.playSound(null, p.blockPosition(), SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.PLAYERS, 1.5F, 0.6F);
         lv.sendParticles(ParticleTypes.REVERSE_PORTAL, p.getX(), p.getY() + 1, p.getZ(),
                 60, 0.6, 0.8, 0.6, 0.1);
         return true;
