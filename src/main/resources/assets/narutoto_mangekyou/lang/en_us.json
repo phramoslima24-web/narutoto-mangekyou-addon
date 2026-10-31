@@ -1,0 +1,23 @@
+{
+  "item.narutoto_mangekyou.mangekyou_itachi": "Itachi's Mangekyou",
+  "item.narutoto_mangekyou.mangekyou_shisui": "Shisui's Mangekyou",
+  "item.narutoto_mangekyou.mangekyou_madara": "Madara's Mangekyou",
+  "ability.narutoto_mangekyou.susanoo": "Susanoo",
+  "ability.narutoto_mangekyou.amaterasu": "Amaterasu",
+  "ability.narutoto_mangekyou.kotoamatsukami": "Kotoamatsukami",
+  "ability.narutoto_mangekyou.tsukuyomi": "Tsukuyomi",
+  "ability.narutoto_mangekyou.rewind": "Left eye: rewind 2 seconds",
+  "ability.narutoto_mangekyou.time_stop": "Right eye: stop time",
+  "tooltip.narutoto_mangekyou.abilities": "Abilities:",
+  "tooltip.narutoto_mangekyou.selected": "Selected: %s",
+  "tooltip.narutoto_mangekyou.help": "Right click: use | Shift + right click: switch ability",
+  "msg.narutoto_mangekyou.selected": "Ability: %s",
+  "msg.narutoto_mangekyou.cooldown": "On cooldown... %s s",
+  "msg.narutoto_mangekyou.no_target": "No target in sight.",
+  "msg.narutoto_mangekyou.invalid_target": "This target can't be affected.",
+  "msg.narutoto_mangekyou.no_history": "Not enough history yet (hold the eye for a moment).",
+  "msg.narutoto_mangekyou.already_stopped": "Time is already stopped here.",
+  "msg.narutoto_mangekyou.time_stopped": "Time has stopped.",
+  "msg.narutoto_mangekyou.time_resumed": "Time flows again.",
+  "msg.narutoto_mangekyou.koto_player": "You felt your mind being invaded by a genjutsu."
+}

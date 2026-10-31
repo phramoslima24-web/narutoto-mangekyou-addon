@@ -1,0 +1,20 @@
+package com.narutotoaddon.mangekyou;
+
+import net.minecraft.world.item.Item;
+import net.minecraftforge.registries.DeferredRegister;
+import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.RegistryObject;
+
+public final class ModItems {
+    public static final DeferredRegister<Item> ITEMS =
+            DeferredRegister.create(ForgeRegistries.ITEMS, MangekyouAddon.MODID);
+
+    public static final RegistryObject<Item> MANGEKYOU_ITACHI =
+            ITEMS.register("mangekyou_itachi", () -> new MangekyouItem(MangekyouItem.Kind.ITACHI));
+    public static final RegistryObject<Item> MANGEKYOU_SHISUI =
+            ITEMS.register("mangekyou_shisui", () -> new MangekyouItem(MangekyouItem.Kind.SHISUI));
+    public static final RegistryObject<Item> MANGEKYOU_MADARA =
+            ITEMS.register("mangekyou_madara", () -> new MangekyouItem(MangekyouItem.Kind.MADARA));
+
+    private ModItems() {}
+}

@@ -1,0 +1,23 @@
+{
+  "item.narutoto_mangekyou.mangekyou_itachi": "Mangekyou do Itachi",
+  "item.narutoto_mangekyou.mangekyou_shisui": "Mangekyou do Shisui",
+  "item.narutoto_mangekyou.mangekyou_madara": "Mangekyou do Madara",
+  "ability.narutoto_mangekyou.susanoo": "Susanoo",
+  "ability.narutoto_mangekyou.amaterasu": "Amaterasu",
+  "ability.narutoto_mangekyou.kotoamatsukami": "Kotoamatsukami",
+  "ability.narutoto_mangekyou.tsukuyomi": "Tsukuyomi",
+  "ability.narutoto_mangekyou.rewind": "Olho esquerdo: voltar 2 segundos",
+  "ability.narutoto_mangekyou.time_stop": "Olho direito: parar o tempo",
+  "tooltip.narutoto_mangekyou.abilities": "Habilidades:",
+  "tooltip.narutoto_mangekyou.selected": "Selecionada: %s",
+  "tooltip.narutoto_mangekyou.help": "Botao direito: usar | Shift + botao direito: trocar habilidade",
+  "msg.narutoto_mangekyou.selected": "Habilidade: %s",
+  "msg.narutoto_mangekyou.cooldown": "Recarregando... %s s",
+  "msg.narutoto_mangekyou.no_target": "Nenhum alvo na mira.",
+  "msg.narutoto_mangekyou.invalid_target": "Esse alvo nao pode ser afetado.",
+  "msg.narutoto_mangekyou.no_history": "Ainda nao ha 2 segundos de historico (segure o olho por um instante).",
+  "msg.narutoto_mangekyou.already_stopped": "O tempo ja esta parado aqui.",
+  "msg.narutoto_mangekyou.time_stopped": "O tempo parou.",
+  "msg.narutoto_mangekyou.time_resumed": "O tempo voltou a correr.",
+  "msg.narutoto_mangekyou.koto_player": "Voce sentiu sua mente ser invadida por um genjutsu."
+}
