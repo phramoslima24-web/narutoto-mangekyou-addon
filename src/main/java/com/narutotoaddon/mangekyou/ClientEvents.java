@@ -1,13 +1,19 @@
 package com.narutotoaddon.mangekyou;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.lwjgl.glfw.GLFW;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
@@ -20,8 +26,31 @@ public final class ClientEvents {
     private static boolean keyTried;
     private static boolean wasDown;
 
+    private static final KeyMapping USE_KEY = new KeyMapping("key." + MangekyouAddon.MODID + ".use",
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_G, "key.categories." + MangekyouAddon.MODID);
+    private static final KeyMapping CYCLE_KEY = new KeyMapping("key." + MangekyouAddon.MODID + ".cycle",
+            InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_H, "key.categories." + MangekyouAddon.MODID);
+
     public static void register() {
         MinecraftForge.EVENT_BUS.register(ClientEvents.class);
+        var modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modBus.addListener(ClientEvents::onRegisterKeys);
+        modBus.addListener(ClientEvents::onAddLayers);
+    }
+
+    public static void onRegisterKeys(RegisterKeyMappingsEvent e) {
+        e.register(USE_KEY);
+        e.register(CYCLE_KEY);
+    }
+
+    /** Coloca a camada dos olhos do implante nos dois modelos de jogador (normal e slim). */
+    public static void onAddLayers(EntityRenderersEvent.AddLayers e) {
+        for (String skin : new String[] {"default", "slim"}) {
+            Object r = e.getSkin(skin);
+            if (r instanceof PlayerRenderer pr) {
+                pr.addLayer(new EyeLayer(pr));
+            }
+        }
     }
 
     private static boolean isDojutsuScreen(Screen s) {
@@ -40,7 +69,7 @@ public final class ClientEvents {
     public static void onRender(ScreenEvent.Render.Post e) {
         Screen s = e.getScreen();
         if (!isDojutsuScreen(s)) return;
-        Implant imp = Implant.byId(ClientState.implant);
+        Implant imp = ClientState.mine();
         if (imp == null) return;
         GuiGraphics g = e.getGuiGraphics();
         var font = Minecraft.getInstance().font;
@@ -62,7 +91,7 @@ public final class ClientEvents {
     public static void onClick(ScreenEvent.MouseButtonPressed.Pre e) {
         Screen s = e.getScreen();
         if (!isDojutsuScreen(s) || e.getButton() != 0) return;
-        Implant imp = Implant.byId(ClientState.implant);
+        Implant imp = ClientState.mine();
         if (imp == null) return;
         int x = originX(s), y = originY(s) + 14;
         for (Ability a : imp.abilities) {
@@ -94,13 +123,16 @@ public final class ClientEvents {
         if (e.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
+        ClientState.self = mc.player.getUUID();
+        while (USE_KEY.consumeClick()) Net.CH.sendToServer(new UseJutsuPacket(UseJutsuPacket.OWN_USE));
+        while (CYCLE_KEY.consumeClick()) Net.CH.sendToServer(new UseJutsuPacket(UseJutsuPacket.OWN_CYCLE));
         KeyMapping km = findKey();
         if (km == null) return;
         boolean down = km.isDown();
         if (wasDown && !down && mc.screen == null) {
             String name = Bridge.getString(mc.player, "jutsu_choosed_name", "");
             if (Ability.byJutsuKey(name) != null) {
-                Net.CH.sendToServer(new UseJutsuPacket());
+                Net.CH.sendToServer(new UseJutsuPacket(UseJutsuPacket.MOD_KEY));
             }
         }
         wasDown = down;

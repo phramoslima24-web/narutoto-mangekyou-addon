@@ -32,5 +32,10 @@
   "msg.narutoto_mangekyou.already_stopped": "Time is already stopped here.",
   "msg.narutoto_mangekyou.time_stopped": "Time has stopped.",
   "msg.narutoto_mangekyou.time_resumed": "Time flows again.",
-  "msg.narutoto_mangekyou.koto_player": "You felt your mind being invaded by a genjutsu."
+  "msg.narutoto_mangekyou.koto_player": "You felt your mind being invaded by a genjutsu.",
+  "key.narutoto_mangekyou.use": "Use implant jutsu",
+  "key.narutoto_mangekyou.cycle": "Switch implant jutsu",
+  "key.categories.narutoto_mangekyou": "Narutoto - Mangekyou Addon",
+  "msg.narutoto_mangekyou.no_implant": "You have no implant. Right click one of the Mangekyou items.",
+  "msg.narutoto_mangekyou.own_selected": "Implant jutsu: %s"
 }

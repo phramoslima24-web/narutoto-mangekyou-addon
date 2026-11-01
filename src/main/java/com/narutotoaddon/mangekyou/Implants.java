@@ -35,12 +35,13 @@ public final class Implants {
     }
 
     private static void msg(ServerPlayer p, String key, Object... args) {
-        p.displayClientMessage(Component.translatable("msg." + MangekyouAddon.MODID + "." + key, args), true);
+        p.sendSystemMessage(Component.translatable("msg." + MangekyouAddon.MODID + "." + key, args));
     }
 
     public static void sync(ServerPlayer p) {
         Implant i = get(p);
-        Net.CH.send(PacketDistributor.PLAYER.with(() -> p), new SyncImplantPacket(i == null ? "" : i.id));
+        Net.CH.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p),
+                new SyncImplantPacket(p.getUUID(), i == null ? "" : i.id));
     }
 
     private static void sound(ServerPlayer p, String modSound, SoundEvent fallback, float pitch) {
@@ -54,6 +55,39 @@ public final class Implants {
         sound(p, "inject", SoundEvents.PLAYER_LEVELUP, 1.0F);
         // mensagem no chat
         p.sendSystemMessage(Component.translatable("msg." + MangekyouAddon.MODID + ".implant_done"));
+    }
+
+    private static final String TAG_SEL = "mkaddon_sel";
+
+    /** Jutsu escolhido pela tecla propria "trocar". */
+    public static Ability ownSelected(ServerPlayer p) {
+        Implant i = get(p);
+        if (i == null) return null;
+        return i.abilities[Math.floorMod(p.getPersistentData().getInt(TAG_SEL), i.abilities.length)];
+    }
+
+    public static void cycle(ServerPlayer p) {
+        Implant i = get(p);
+        if (i == null) {
+            msg(p, "no_implant");
+            return;
+        }
+        int next = (p.getPersistentData().getInt(TAG_SEL) + 1) % i.abilities.length;
+        p.getPersistentData().putInt(TAG_SEL, next);
+        p.displayClientMessage(Component.translatable("msg." + MangekyouAddon.MODID + ".own_selected",
+                Component.translatable(i.abilities[next].jutsuKey())), true);
+    }
+
+    /** Tecla propria "usar": jutsu do addon selecionado no menu do Narutoto, senao o escolhido por "trocar". */
+    public static void useOwn(ServerPlayer p) {
+        Implant i = get(p);
+        if (i == null) {
+            msg(p, "no_implant");
+            return;
+        }
+        Ability a = Ability.byJutsuKey(Bridge.getString(p, "jutsu_choosed_name", ""));
+        if (a == null || !i.allows(a)) a = ownSelected(p);
+        AbilityHandler.use(p, a);
     }
 
     /** Botao do menu de dojutsu: aprende o jutsu e coloca no slot escolhido. */
@@ -103,6 +137,16 @@ public final class Implants {
                     Component.translatable(imp.nameKey())));
         }
         p.getPersistentData().putDouble(TAG_STAGE, st);
+    }
+
+    @SubscribeEvent
+    public static void onStartTracking(PlayerEvent.StartTracking e) {
+        if (e.getTarget() instanceof ServerPlayer target && e.getEntity() instanceof ServerPlayer viewer) {
+            Implant i = get(target);
+            if (i != null) {
+                Net.CH.send(PacketDistributor.PLAYER.with(() -> viewer), new SyncImplantPacket(target.getUUID(), i.id));
+            }
+        }
     }
 
     @SubscribeEvent

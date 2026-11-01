@@ -57,7 +57,7 @@ public final class AbilityHandler {
     }
 
     static void msg(ServerPlayer p, String key) {
-        p.displayClientMessage(Component.translatable("msg." + MangekyouAddon.MODID + "." + key), true);
+        p.sendSystemMessage(Component.translatable("msg." + MangekyouAddon.MODID + "." + key));
     }
 
     // ---------------------------------------------------------- Novo Amaterasu

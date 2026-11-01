@@ -7,6 +7,8 @@ Requer **Narutoto 0.4.1+**. Nao precisa do jar do Narutoto para compilar.
 2. Depois, ao ativar o Mangekyou do jeito normal do mod (B e seta para cima), o chat avisa qual olho despertou.
 3. No **menu de dojutsu** aparecem botoes ao lado: *Aprender: <jutsu>*. Isso coloca o jutsu no slot escolhido, igual aos jutsus do mod.
 4. Selecione o jutsu e use com a tecla de soltar jutsu do Narutoto.
+5. **Teclas de reserva** (Controles > "Narutoto - Mangekyou Addon"): **G** usa o jutsu do implante (o selecionado no menu do Narutoto, ou o escolhido com **H**), **H** troca o jutsu do implante. Funcionam mesmo sem aprender no menu. Se algo falhar, o chat diz o motivo.
+6. **Olhos:** com o Mangekyou ativo (estagio 2), os olhos do implante (Itachi, Shisui ou Madara) aparecem no rosto, tambem para outros jogadores.
 
 | Implante | Jutsus extras (o Susanoo e o do proprio mod) |
 |---|---|
@@ -21,6 +23,6 @@ Requer **Narutoto 0.4.1+**. Nao precisa do jar do Narutoto para compilar.
 - **Local:** JDK 17 + Gradle 8.1.1, `gradle build`; jar em `build/libs`.
 
 ## Limites conhecidos
-- Textura do olho no rosto: continua a do mod (nao troca por implante).
+- Os olhos sao desenhados por cima do Mangekyou do mod (mesma geometria); no estagio 3 (Eternal) nao mudam.
 - Codigo nao foi compilado nem testado no jogo. Os dados do Narutoto sao lidos por reflexao (`Bridge.java`); se algo falhar, o log mostra `[narutoto_mangekyou]`.
 - Fogo preto em chunks descarregados so e apagado quando o chunk estiver carregado.

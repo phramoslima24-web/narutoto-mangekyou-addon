@@ -1,4 +1,3 @@
-
 package com.narutotoaddon.mangekyou;
 
 import java.util.ArrayDeque;
