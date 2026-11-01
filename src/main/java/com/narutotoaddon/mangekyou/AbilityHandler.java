@@ -11,12 +11,10 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
-/** Executa as habilidades dos olhos (lado servidor). */
+/** Executa as habilidades dos olhos implantados (lado servidor). O Susanoo e o do proprio mod. */
 public final class AbilityHandler {
     private AbilityHandler() {}
 
@@ -25,6 +23,20 @@ public final class AbilityHandler {
     }
 
     public static void use(ServerPlayer p, Ability a) {
+        Implant imp = Implants.get(p);
+        if (imp == null || !imp.allows(a)) {
+            msg(p, "wrong_implant");
+            return;
+        }
+        if (!Implants.mangekyouActive(p)) {
+            msg(p, "need_mangekyou");
+            return;
+        }
+        // Shift + Novo Amaterasu: apaga todos os fogos pretos (sem recarga)
+        if (a == Ability.NOVO_AMATERASU && p.isShiftKeyDown()) {
+            BlackFire.extinguishAll(p);
+            return;
+        }
         long now = p.level().getGameTime();
         long cdEnd = p.getPersistentData().getLong(cdKey(a));
         if (now < cdEnd) {
@@ -33,8 +45,7 @@ public final class AbilityHandler {
             return;
         }
         boolean ok = switch (a) {
-            case SUSANOO -> susanoo(p);
-            case AMATERASU -> amaterasu(p);
+            case NOVO_AMATERASU -> novoAmaterasu(p);
             case KOTOAMATSUKAMI -> kotoamatsukami(p);
             case TSUKUYOMI -> tsukuyomi(p);
             case REWIND -> RewindHandler.rewind(p);
@@ -49,46 +60,24 @@ public final class AbilityHandler {
         p.displayClientMessage(Component.translatable("msg." + MangekyouAddon.MODID + "." + key), true);
     }
 
-    // ---------------------------------------------------------------- Susanoo
-    private static boolean susanoo(ServerPlayer p) {
-        ServerLevel lv = (ServerLevel) p.level();
-        int dur = 600; // 30 s
-        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, dur, 3));
-        p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, dur, 4));
-        p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, dur, 1));
-        AbilityScheduler.SUSANOO.put(p.getUUID(), lv.getGameTime() + dur);
-        lv.playSound(null, p.blockPosition(), SoundEvents.WITHER_SPAWN, SoundSource.PLAYERS, 0.6F, 1.4F);
-        return true;
-    }
-
-    // -------------------------------------------------------------- Amaterasu
-    private static boolean amaterasu(ServerPlayer p) {
+    // ---------------------------------------------------------- Novo Amaterasu
+    private static boolean novoAmaterasu(ServerPlayer p) {
         ServerLevel lv = (ServerLevel) p.level();
         LivingEntity target = Targeting.livingInSight(p, 48.0D);
         if (target != null) {
             AbilityScheduler.BURNING.put(target.getUUID(),
-                    new AbilityScheduler.Timed(lv.dimension(), lv.getGameTime() + 200)); // 10 s
+                    new AbilityScheduler.Timed(lv.dimension(), lv.getGameTime() + 400)); // 20 s seguindo o alvo
             target.setSecondsOnFire(10);
+            BlackFire.placeAround(lv, target.blockPosition(), 1);
             lv.playSound(null, target.blockPosition(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1.0F, 0.5F);
-            lv.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, target.getX(), target.getY() + 1, target.getZ(),
-                    30, 0.4, 0.6, 0.4, 0.02);
             return true;
         }
         HitResult hr = p.pick(48.0D, 1.0F, false);
         if (hr instanceof BlockHitResult bhr && hr.getType() == HitResult.Type.BLOCK) {
             BlockPos pos = bhr.getBlockPos().relative(bhr.getDirection());
-            if (lv.isEmptyBlock(pos)) {
-                BlockState fire = Blocks.SOUL_FIRE.defaultBlockState();
-                if (!fire.canSurvive(lv, pos)) {
-                    fire = Blocks.FIRE.defaultBlockState();
-                }
-                if (fire.canSurvive(lv, pos)) {
-                    lv.setBlockAndUpdate(pos, fire);
-                    lv.playSound(null, pos, SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1.0F, 0.5F);
-                    lv.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, pos.getX() + 0.5, pos.getY() + 0.5,
-                            pos.getZ() + 0.5, 20, 0.3, 0.3, 0.3, 0.02);
-                    return true;
-                }
+            if (BlackFire.placeAround(lv, pos, 2) > 0) {
+                lv.playSound(null, pos, SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1.0F, 0.5F);
+                return true;
             }
         }
         msg(p, "no_target");

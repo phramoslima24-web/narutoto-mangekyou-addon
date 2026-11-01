@@ -16,7 +16,6 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.event.TickEvent;
@@ -26,7 +25,7 @@ import net.minecraftforge.server.ServerLifecycleHooks;
 /**
  * Olho esquerdo do Madara: volta 2 segundos no tempo para o jogador e para os seres vivos proximos
  * (posicao, rotacao e vida). Quem ja morreu nao e revivido.
- * O historico so e gravado enquanto o jogador carrega o Mangekyou do Madara no inventario.
+ * O historico so e gravado enquanto o jogador tem o implante do Madara.
  */
 public final class RewindHandler {
     private RewindHandler() {}
@@ -45,11 +44,7 @@ public final class RewindHandler {
     }
 
     private static boolean holdsMadaraEye(ServerPlayer p) {
-        for (ItemStack s : p.getInventory().items) {
-            if (s.getItem() instanceof MangekyouItem m && m.kind == MangekyouItem.Kind.MADARA) return true;
-        }
-        ItemStack off = p.getOffhandItem();
-        return off.getItem() instanceof MangekyouItem m && m.kind == MangekyouItem.Kind.MADARA;
+        return Implants.get(p) == Implant.MADARA;
     }
 
     private static void record(LivingEntity le, long now, Set<UUID> done) {
@@ -103,7 +98,7 @@ public final class RewindHandler {
             restore(le, s);
             dq.clear();
         }
-        lv.playSound(null, p.blockPosition(), SoundEvents.RESPAWN_ANCHOR_DEPLETE.value(), SoundSource.PLAYERS, 1.5F, 0.6F);
+        lv.playSound(null, p.blockPosition(), SoundEvents.RESPAWN_ANCHOR_DEPLETE, SoundSource.PLAYERS, 1.5F, 0.6F);
         lv.sendParticles(ParticleTypes.REVERSE_PORTAL, p.getX(), p.getY() + 1, p.getZ(),
                 60, 0.6, 0.8, 0.6, 0.1);
         return true;

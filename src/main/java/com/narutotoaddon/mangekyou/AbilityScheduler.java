@@ -29,7 +29,6 @@ public final class AbilityScheduler {
     public record Locked(ResourceKey<Level> dim, long end, boolean disabledAi) {}
     public record Controlled(ResourceKey<Level> dim, long end, UUID owner) {}
 
-    static final Map<UUID, Long> SUSANOO = new HashMap<>();
     static final Map<UUID, Timed> BURNING = new HashMap<>();
     static final Map<UUID, Locked> TSUKUYOMI = new HashMap<>();
     static final Map<UUID, Controlled> CONTROLLED = new HashMap<>();
@@ -41,27 +40,7 @@ public final class AbilityScheduler {
         if (server == null) return;
         int tc = server.getTickCount();
 
-        // Susanoo: aura roxa enquanto durar
-        if (tc % 4 == 0) {
-            Iterator<Map.Entry<UUID, Long>> it = SUSANOO.entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<UUID, Long> en = it.next();
-                ServerPlayer pl = server.getPlayerList().getPlayer(en.getKey());
-                if (pl == null || !pl.isAlive() || pl.level().getGameTime() >= en.getValue()) {
-                    it.remove();
-                    continue;
-                }
-                ServerLevel lv = (ServerLevel) pl.level();
-                double base = tc * 0.2D;
-                for (int i = 0; i < 12; i++) {
-                    double a = base + i * Math.PI / 6.0D;
-                    lv.sendParticles(ParticleTypes.WITCH, pl.getX() + Math.cos(a) * 1.4D,
-                            pl.getY() + 0.3D + (i % 4) * 0.5D, pl.getZ() + Math.sin(a) * 1.4D, 1, 0, 0, 0, 0);
-                }
-            }
-        }
-
-        // Amaterasu: fogo negro que nao apaga na agua
+        // Novo Amaterasu: fogo preto que segue o alvo
         if (tc % 10 == 0) {
             Iterator<Map.Entry<UUID, Timed>> it = BURNING.entrySet().iterator();
             while (it.hasNext()) {
@@ -73,6 +52,7 @@ public final class AbilityScheduler {
                     continue;
                 }
                 ent.setSecondsOnFire(3);
+                BlackFire.place(lv, ent.blockPosition());
                 ent.hurt(lv.damageSources().magic(), 1.0F);
                 lv.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, ent.getX(), ent.getY() + ent.getBbHeight() / 2,
                         ent.getZ(), 6, 0.3, 0.4, 0.3, 0.01);
@@ -141,7 +121,6 @@ public final class AbilityScheduler {
 
     @SubscribeEvent
     public static void onServerStopped(ServerStoppedEvent e) {
-        SUSANOO.clear();
         BURNING.clear();
         TSUKUYOMI.clear();
         CONTROLLED.clear();

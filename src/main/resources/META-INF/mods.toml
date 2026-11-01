@@ -4,10 +4,10 @@ license="MIT"
 
 [[mods]]
 modId="narutoto_mangekyou"
-version="1.0.0"
+version="2.0.0"
 displayName="Narutoto - Mangekyou Addon"
 description='''
-Addon para o Narutoto: Ninja World. Adiciona os Mangekyou do Itachi, Shisui e Madara com habilidades proprias.
+Addon para o Narutoto: Ninja World. Implantes de Mangekyou (Itachi, Shisui, Madara) com jutsus no menu de dojutsu.
 '''
 
 [[dependencies.narutoto_mangekyou]]

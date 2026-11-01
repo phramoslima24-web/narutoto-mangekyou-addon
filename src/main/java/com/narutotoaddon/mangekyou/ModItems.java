@@ -10,11 +10,11 @@ public final class ModItems {
             DeferredRegister.create(ForgeRegistries.ITEMS, MangekyouAddon.MODID);
 
     public static final RegistryObject<Item> MANGEKYOU_ITACHI =
-            ITEMS.register("mangekyou_itachi", () -> new MangekyouItem(MangekyouItem.Kind.ITACHI));
+            ITEMS.register("mangekyou_itachi", () -> new ImplantItem(Implant.ITACHI));
     public static final RegistryObject<Item> MANGEKYOU_SHISUI =
-            ITEMS.register("mangekyou_shisui", () -> new MangekyouItem(MangekyouItem.Kind.SHISUI));
+            ITEMS.register("mangekyou_shisui", () -> new ImplantItem(Implant.SHISUI));
     public static final RegistryObject<Item> MANGEKYOU_MADARA =
-            ITEMS.register("mangekyou_madara", () -> new MangekyouItem(MangekyouItem.Kind.MADARA));
+            ITEMS.register("mangekyou_madara", () -> new ImplantItem(Implant.MADARA));
 
     private ModItems() {}
 }
