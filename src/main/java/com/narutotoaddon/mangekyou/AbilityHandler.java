@@ -39,7 +39,7 @@ public final class AbilityHandler {
         }
         long now = p.level().getGameTime();
         long cdEnd = p.getPersistentData().getLong(cdKey(a));
-        if (now < cdEnd) {
+        if (now < cdEnd && !p.getAbilities().instabuild) {
             long secs = (cdEnd - now + 19) / 20;
             p.displayClientMessage(Component.translatable("msg." + MangekyouAddon.MODID + ".cooldown", secs), true);
             return;
@@ -92,6 +92,10 @@ public final class AbilityHandler {
             msg(p, "no_target");
             return false;
         }
+        if (target instanceof net.minecraft.world.entity.player.Player pl && (pl.isCreative() || pl.isSpectator())) {
+            msg(p, "invalid_target");
+            return false;
+        }
         if (target instanceof ServerPlayer other) {
             other.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 2));
             other.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 1));
@@ -118,6 +122,10 @@ public final class AbilityHandler {
             msg(p, "no_target");
             return false;
         }
+        if (target instanceof net.minecraft.world.entity.player.Player pl && (pl.isCreative() || pl.isSpectator())) {
+            msg(p, "invalid_target");
+            return false;
+        }
         int dur = 200; // 10 s
         target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, dur, 0));
         target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, dur, 0));
@@ -132,6 +140,7 @@ public final class AbilityHandler {
         AbilityScheduler.TSUKUYOMI.put(target.getUUID(),
                 new AbilityScheduler.Locked(lv.dimension(), lv.getGameTime() + dur, disabledAi));
         lv.playSound(null, target.blockPosition(), SoundEvents.ENDERMAN_STARE, SoundSource.PLAYERS, 1.0F, 0.6F);
+        lv.sendParticles(ParticleTypes.SOUL, target.getX(), target.getY() + 1.2, target.getZ(), 25, 0.5, 0.8, 0.5, 0.02);
         lv.sendParticles(ParticleTypes.SQUID_INK, target.getX(), target.getY() + 1, target.getZ(),
                 30, 0.4, 0.6, 0.4, 0.05);
         return true;

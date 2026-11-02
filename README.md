@@ -26,3 +26,9 @@ Requer **Narutoto 0.4.1+**. Nao precisa do jar do Narutoto para compilar.
 - Os olhos sao desenhados por cima do Mangekyou do mod (mesma geometria); no estagio 3 (Eternal) nao mudam.
 - Codigo nao foi compilado nem testado no jogo. Os dados do Narutoto sao lidos por reflexao (`Bridge.java`); se algo falhar, o log mostra `[narutoto_mangekyou]`.
 - Fogo preto em chunks descarregados so e apagado quando o chunk estiver carregado.
+
+## Melhorias recentes
+- **Auxilio de mira**: Novo Amaterasu, Tsukuyomi e Kotoamatsukami agora pegam o alvo mais proximo da sua linha de visao mesmo sem acertar exatamente nele.
+- **Criativo** ignora recarga dos jutsus.
+- Tsukuyomi e Kotoamatsukami nao afetam jogadores em criativo/espectador.
+- Particulas extras no Tsukuyomi.
