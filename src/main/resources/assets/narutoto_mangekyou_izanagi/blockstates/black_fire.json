@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "": [
+      { "model": "narutoto_mangekyou_izanagi:block/black_fire_floor0" },
+      { "model": "narutoto_mangekyou_izanagi:block/black_fire_floor1" }
+    ]
+  }
+}

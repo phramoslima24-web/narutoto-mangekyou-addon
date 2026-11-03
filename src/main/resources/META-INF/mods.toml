@@ -3,28 +3,28 @@ loaderVersion="[47,)"
 license="MIT"
 
 [[mods]]
-modId="narutoto_mangekyou"
-version="2.1.0"
-displayName="Narutoto - Mangekyou Addon"
+modId="narutoto_mangekyou_izanagi"
+version="3.0.0"
+displayName="Narutoto - Mangekyou + Izanagi Addon"
 description='''
-Addon para o Narutoto: Ninja World. Implantes de Mangekyou (Itachi, Shisui, Madara) com jutsus no menu de dojutsu.
+Addon para o Narutoto: Ninja World. Implantes de Mangekyou (Itachi, Shisui, Madara) com jutsus no menu de dojutsu, mais Izanagi e Izanami (que cegam o olho usado).
 '''
 
-[[dependencies.narutoto_mangekyou]]
+[[dependencies.narutoto_mangekyou_izanagi]]
     modId="forge"
     mandatory=true
     versionRange="[47,)"
     ordering="NONE"
     side="BOTH"
 
-[[dependencies.narutoto_mangekyou]]
+[[dependencies.narutoto_mangekyou_izanagi]]
     modId="minecraft"
     mandatory=true
     versionRange="[1.20.1]"
     ordering="NONE"
     side="BOTH"
 
-[[dependencies.narutoto_mangekyou]]
+[[dependencies.narutoto_mangekyou_izanagi]]
     modId="narutoto"
     mandatory=true
     versionRange="[0.4.1,)"

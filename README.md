@@ -1,4 +1,4 @@
-# Narutoto - Mangekyou Addon 2.0 (Forge 1.20.1)
+# Narutoto - Mangekyou + Izanagi Addon 3.0 (Forge 1.20.1)
 
 Requer **Narutoto 0.4.1+**. Nao precisa do jar do Narutoto para compilar.
 
@@ -12,13 +12,9 @@ Requer **Narutoto 0.4.1+**. Nao precisa do jar do Narutoto para compilar.
 
 | Implante | Jutsus extras (o Susanoo e o do proprio mod) |
 |---|---|
-| Itachi | Novo Amaterasu, Tsukuyomi, Izanagi, Izanami |
-| Shisui | Novo Amaterasu, Kotoamatsukami, Izanagi, Izanami |
-| Madara | Olho esquerdo (voltar 2 s), Olho direito (parar o tempo), Izanagi, Izanami |
-
-**Izanagi** (recarga 5 min): arma o olho por 60 s. Se vier um golpe fatal nesse tempo, a morte e anulada (vida cheia, efeitos limpos, 3 s de invulnerabilidade). `/kill` e o vazio nao sao anulados.
-**Izanami** (recarga 2 min): prende o alvo da mira num loop de 10 s; a cada 2 s ele volta ao ponto onde o loop comecou.
-Nos dois, o custo do olho e **cegueira de 5 segundos** no usuario (nao e permanente).
+| Itachi | Novo Amaterasu, Tsukuyomi |
+| Shisui | Novo Amaterasu, Kotoamatsukami |
+| Madara | Olho esquerdo (voltar 2 s), Olho direito (parar o tempo) |
 
 **Novo Amaterasu:** fogo de verdade (bloco "Fogo Preto"), que nao se espalha, nao some sozinho e a chuva nao apaga. **Shift + usar o jutsu** apaga todos os fogos pretos.
 
@@ -28,7 +24,7 @@ Nos dois, o custo do olho e **cegueira de 5 segundos** no usuario (nao e permane
 
 ## Limites conhecidos
 - Os olhos sao desenhados por cima do Mangekyou do mod (mesma geometria); no estagio 3 (Eternal) nao mudam.
-- Codigo nao foi compilado nem testado no jogo. Os dados do Narutoto sao lidos por reflexao (`Bridge.java`); se algo falhar, o log mostra `[narutoto_mangekyou]`.
+- Codigo nao foi compilado nem testado no jogo. Os dados do Narutoto sao lidos por reflexao (`Bridge.java`); se algo falhar, o log mostra `[narutoto_mangekyou_izanagi]`.
 - Fogo preto em chunks descarregados so e apagado quando o chunk estiver carregado.
 
 ## Melhorias recentes
@@ -36,3 +32,18 @@ Nos dois, o custo do olho e **cegueira de 5 segundos** no usuario (nao e permane
 - **Criativo** ignora recarga dos jutsus.
 - Tsukuyomi e Kotoamatsukami nao afetam jogadores em criativo/espectador.
 - Particulas extras no Tsukuyomi.
+
+
+## Novidade 3.0: Izanagi e Izanami (nos 3 Mangekyou: Itachi, Shisui e Madara)
+Cada implante agora tem 4 jutsus extras no menu de dojutsu: **Izanagi (olho esquerdo/direito)** e **Izanami (olho esquerdo/direito)**.
+
+- **Izanagi:** fica armado por 2 minutos. Se voce *morrer* nesse tempo, a morte e anulada (vida cheia, efeitos ruins removidos, volta ao ponto de nascimento se cair no void) e **o olho escolhido fica cego**. Se o tempo acabar sem morrer, nada e cobrado. `/kill` nao e anulado. Recarga: 10 min.
+- **Izanami:** prende o alvo na mira por 20 s (puxado de volta ao ponto, cego, sem forca, nao ataca). **O olho escolhido fica cego na hora.** Recarga: 5 min.
+- **Cegueira:** o olho cego aparece palido no rosto (tambem para outros jogadores) e a **metade da tela daquele lado fica preta** (esquerdo = metade esquerda; os dois = tela toda). Jutsus que exigem o olho cego nao funcionam (Madara: voltar o tempo = olho esquerdo, parar o tempo = direito); com os dois cegos nenhum jutsu do addon funciona.
+- **Cura:** a UNICA forma e implantar de novo o **mesmo Mangekyou** do olho que cegou. Outro Mangekyou e recusado enquanto voce estiver cego (e o item nao e gasto). A cegueira sobrevive a morte.
+- **Como pegar o olho de novo:** o **Itachi NPC** do Narutoto larga o *Mangekyou do Itachi* quando um jogador o mata. Shisui e Madara nao tem NPC no Narutoto 0.4.1, entao so pela aba criativa/comandos (`/give @s narutoto_mangekyou_izanagi:mangekyou_shisui`).
+- Izanami tambem cega o olho usado (como no anime). Para mudar, ajuste `Ability.costsEye()` / `IzanamiHandler.cast`.
+
+IDs diferentes do addon antigo (`narutoto_mangekyou_izanagi`), entao os dois nao entram em conflito, mas **nao use os dois juntos** (os itens e jutsus se repetem).
+
+Nao compilado nem testado no jogo. Se os olhos aparecerem trocados no rosto, mude `SWAP_EYE_SIDES` em `EyeLayer.java`.
