@@ -28,14 +28,10 @@ public final class AbilityScheduler {
     public record Timed(ResourceKey<Level> dim, long end) {}
     public record Locked(ResourceKey<Level> dim, long end, boolean disabledAi) {}
     public record Controlled(ResourceKey<Level> dim, long end, UUID owner) {}
-    /** Loop do Izanami: guarda a pose inicial e teleporta o alvo de volta periodicamente. */
-    public record IzanamiLock(ResourceKey<Level> dim, long end, boolean disabledAi,
-                              double x, double y, double z, float yRot, float xRot) {}
 
     static final Map<UUID, Timed> BURNING = new HashMap<>();
     static final Map<UUID, Locked> TSUKUYOMI = new HashMap<>();
     static final Map<UUID, Controlled> CONTROLLED = new HashMap<>();
-    static final Map<UUID, IzanamiLock> IZANAMI = new HashMap<>();
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent e) {
@@ -101,36 +97,6 @@ public final class AbilityScheduler {
                     }
                 }
             }
-
-            // Izanami: loop de posicao a cada 1 s
-            Iterator<Map.Entry<UUID, IzanamiLock>> it3 = IZANAMI.entrySet().iterator();
-            while (it3.hasNext()) {
-                Map.Entry<UUID, IzanamiLock> en = it3.next();
-                IzanamiLock lock = en.getValue();
-                ServerLevel lv = server.getLevel(lock.dim());
-                Entity ent = lv == null ? null : lv.getEntity(en.getKey());
-                boolean finished = ent == null || !ent.isAlive() || lv.getGameTime() >= lock.end();
-                if (ent instanceof LivingEntity le) {
-                    if (finished) {
-                        if (lock.disabledAi() && le instanceof Mob m) m.setNoAi(false);
-                    } else {
-                        // teleporta de volta para a pose inicial (loop)
-                        if (le instanceof ServerPlayer sp) {
-                            sp.connection.teleport(lock.x(), lock.y(), lock.z(), lock.yRot(), lock.xRot());
-                        } else {
-                            le.moveTo(lock.x(), lock.y(), lock.z(), lock.yRot(), lock.xRot());
-                            le.setYHeadRot(lock.yRot());
-                            if (le instanceof Mob m) m.getNavigation().stop();
-                        }
-                        le.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
-                        le.fallDistance = 0.0F;
-                        le.hurtMarked = true;
-                        lv.sendParticles(ParticleTypes.REVERSE_PORTAL, le.getX(), le.getY() + 1.0, le.getZ(),
-                                8, 0.3, 0.4, 0.3, 0.02);
-                    }
-                }
-                if (finished) it3.remove();
-            }
         }
     }
 
@@ -158,7 +124,6 @@ public final class AbilityScheduler {
         BURNING.clear();
         TSUKUYOMI.clear();
         CONTROLLED.clear();
-        IZANAMI.clear();
         TimeStopHandler.clear();
         RewindHandler.clear();
     }

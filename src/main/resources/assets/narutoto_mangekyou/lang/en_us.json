@@ -11,8 +11,6 @@
   "jutsu.mkaddon.tsukuyomi": "Tsukuyomi",
   "jutsu.mkaddon.rewind": "Left eye: rewind 2 seconds",
   "jutsu.mkaddon.time_stop": "Right eye: stop time",
-  "jutsu.mkaddon.izanagi": "Izanagi",
-  "jutsu.mkaddon.izanami": "Izanami",
   "jutsu.mkaddon.susanoo_mod": "Susanoo (from the mod)",
   "tooltip.narutoto_mangekyou.implant": "Right click: implant this eye.",
   "tooltip.narutoto_mangekyou.abilities": "Jutsus (dojutsu menu, once Mangekyou is active):",
@@ -40,7 +38,10 @@
   "key.categories.narutoto_mangekyou": "Narutoto - Mangekyou Addon",
   "msg.narutoto_mangekyou.no_implant": "You have no implant. Right click one of the Mangekyou items.",
   "msg.narutoto_mangekyou.own_selected": "Implant jutsu: %s",
-  "msg.narutoto_mangekyou.izanagi_used": "Izanagi activated! Your vision is impaired for 5 seconds.",
-  "msg.narutoto_mangekyou.izanami_used": "Izanami activated! Your vision is impaired for 5 seconds.",
-  "msg.narutoto_mangekyou.izanami_target": "You have been trapped in an infinite loop of events..."
+  "jutsu.mkaddon.izanagi": "Izanagi",
+  "jutsu.mkaddon.izanami": "Izanami",
+  "msg.narutoto_mangekyou.eye_cost": "Your eye took its toll: you are blind for 5 seconds.",
+  "msg.narutoto_mangekyou.izanagi_armed": "Izanagi active for 60 seconds: the next fatal blow will be undone.",
+  "msg.narutoto_mangekyou.izanagi_already": "Izanagi is already active.",
+  "msg.narutoto_mangekyou.izanagi_used": "Izanagi! You cheated death."
 }

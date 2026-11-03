@@ -12,13 +12,13 @@ Requer **Narutoto 0.4.1+**. Nao precisa do jar do Narutoto para compilar.
 
 | Implante | Jutsus extras (o Susanoo e o do proprio mod) |
 |---|---|
-| Itachi | Novo Amaterasu, Tsukuyomi, **Izanagi**, **Izanami** |
-| Shisui | Novo Amaterasu, Kotoamatsukami, **Izanagi**, **Izanami** |
-| Madara | Olho esquerdo (voltar 2 s), Olho direito (parar o tempo), **Izanagi**, **Izanami** |
+| Itachi | Novo Amaterasu, Tsukuyomi, Izanagi, Izanami |
+| Shisui | Novo Amaterasu, Kotoamatsukami, Izanagi, Izanami |
+| Madara | Olho esquerdo (voltar 2 s), Olho direito (parar o tempo), Izanagi, Izanami |
 
-**Izanagi:** cura total + limpa efeitos negativos + absorcao/resistencia por 5 s. Cega o usuario por apenas **5 segundos** (nao e permanente).
-
-**Izanami:** prende o alvo num loop de posicao (teleporta de volta periodicamente) por 10 s. Cega o usuario por apenas **5 segundos** (nao e permanente).
+**Izanagi** (recarga 5 min): arma o olho por 60 s. Se vier um golpe fatal nesse tempo, a morte e anulada (vida cheia, efeitos limpos, 3 s de invulnerabilidade). `/kill` e o vazio nao sao anulados.
+**Izanami** (recarga 2 min): prende o alvo da mira num loop de 10 s; a cada 2 s ele volta ao ponto onde o loop comecou.
+Nos dois, o custo do olho e **cegueira de 5 segundos** no usuario (nao e permanente).
 
 **Novo Amaterasu:** fogo de verdade (bloco "Fogo Preto"), que nao se espalha, nao some sozinho e a chuva nao apaga. **Shift + usar o jutsu** apaga todos os fogos pretos.
 

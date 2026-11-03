@@ -32,6 +32,8 @@ public class MangekyouAddon {
         MinecraftForge.EVENT_BUS.register(TimeStopHandler.class);
         MinecraftForge.EVENT_BUS.register(RewindHandler.class);
         MinecraftForge.EVENT_BUS.register(Implants.class);
+        MinecraftForge.EVENT_BUS.register(IzanagiHandler.class);
+        MinecraftForge.EVENT_BUS.register(IzanamiHandler.class);
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> ClientEvents::register);
     }
