@@ -12,9 +12,13 @@ Requer **Narutoto 0.4.1+**. Nao precisa do jar do Narutoto para compilar.
 
 | Implante | Jutsus extras (o Susanoo e o do proprio mod) |
 |---|---|
-| Itachi | Novo Amaterasu, Tsukuyomi |
-| Shisui | Novo Amaterasu, Kotoamatsukami |
-| Madara | Olho esquerdo (voltar 2 s), Olho direito (parar o tempo) |
+| Itachi | Novo Amaterasu, Tsukuyomi, **Izanagi**, **Izanami** |
+| Shisui | Novo Amaterasu, Kotoamatsukami, **Izanagi**, **Izanami** |
+| Madara | Olho esquerdo (voltar 2 s), Olho direito (parar o tempo), **Izanagi**, **Izanami** |
+
+**Izanagi:** cura total + limpa efeitos negativos + absorcao/resistencia por 5 s. Cega o usuario por apenas **5 segundos** (nao e permanente).
+
+**Izanami:** prende o alvo num loop de posicao (teleporta de volta periodicamente) por 10 s. Cega o usuario por apenas **5 segundos** (nao e permanente).
 
 **Novo Amaterasu:** fogo de verdade (bloco "Fogo Preto"), que nao se espalha, nao some sozinho e a chuva nao apaga. **Shift + usar o jutsu** apaga todos os fogos pretos.
 
@@ -32,13 +36,3 @@ Requer **Narutoto 0.4.1+**. Nao precisa do jar do Narutoto para compilar.
 - **Criativo** ignora recarga dos jutsus.
 - Tsukuyomi e Kotoamatsukami nao afetam jogadores em criativo/espectador.
 - Particulas extras no Tsukuyomi.
-
-
-## Atualização: Izanagi e Izanami
-
-Foram adicionados os jutsus Izanagi e Izanami aos implantes de Itachi, Shisui e Madara.
-- Izanagi abre uma janela de 5 segundos: se um golpe fatal atingir o usuário nesse período,
-  o golpe é anulado e o usuário retorna com metade da vida. Ao ativar ou ao reescrever o golpe,
-  o usuário recebe cegueira por 5 segundos (100 ticks), nunca permanente.
-- Izanami prende o alvo em um genjutsu por 10 segundos; o usuário recebe cegueira por 5 segundos.
-- Os demais jutsus, itens, texturas, controles e configurações existentes foram mantidos.

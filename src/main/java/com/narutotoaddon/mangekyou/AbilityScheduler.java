@@ -16,8 +16,6 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.event.server.ServerStoppedEvent;
@@ -30,14 +28,14 @@ public final class AbilityScheduler {
     public record Timed(ResourceKey<Level> dim, long end) {}
     public record Locked(ResourceKey<Level> dim, long end, boolean disabledAi) {}
     public record Controlled(ResourceKey<Level> dim, long end, UUID owner) {}
-    public record Izanagi(ResourceKey<Level> dim, long end) {}
-    public record Looped(ResourceKey<Level> dim, long end, boolean disabledAi) {}
+    /** Loop do Izanami: guarda a pose inicial e teleporta o alvo de volta periodicamente. */
+    public record IzanamiLock(ResourceKey<Level> dim, long end, boolean disabledAi,
+                              double x, double y, double z, float yRot, float xRot) {}
 
-    static final Map<UUID, Izanagi> IZANAGI = new HashMap<>();
-    static final Map<UUID, Looped> IZANAMI = new HashMap<>();
     static final Map<UUID, Timed> BURNING = new HashMap<>();
     static final Map<UUID, Locked> TSUKUYOMI = new HashMap<>();
     static final Map<UUID, Controlled> CONTROLLED = new HashMap<>();
+    static final Map<UUID, IzanamiLock> IZANAMI = new HashMap<>();
 
     @SubscribeEvent
     public static void onServerTick(TickEvent.ServerTickEvent e) {
@@ -45,35 +43,6 @@ public final class AbilityScheduler {
         MinecraftServer server = ServerLifecycleHooks.getCurrentServer();
         if (server == null) return;
         int tc = server.getTickCount();
-
-        // Izanagi: janela de 5 segundos; ao acabar, aplica cegueira por apenas 5 segundos.
-        Iterator<Map.Entry<UUID, Izanagi>> izanagiIt = IZANAGI.entrySet().iterator();
-        while (izanagiIt.hasNext()) {
-            Map.Entry<UUID, Izanagi> en = izanagiIt.next();
-            Izanagi state = en.getValue();
-            ServerLevel lv = server.getLevel(state.dim());
-            Entity ent = lv == null ? null : lv.getEntity(en.getKey());
-            if (!(ent instanceof ServerPlayer player) || !player.isAlive() || lv.getGameTime() >= state.end()) {
-                if (ent instanceof ServerPlayer player && player.isAlive()) {
-                    player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 0));
-                    player.displayClientMessage(net.minecraft.network.chat.Component.literal("Izanagi: sua visão ficará escura por 5 segundos."), true);
-                }
-                izanagiIt.remove();
-            }
-        }
-
-        // Izanami: libera a IA quando o ciclo de 10 segundos termina.
-        Iterator<Map.Entry<UUID, Looped>> izanamiIt = IZANAMI.entrySet().iterator();
-        while (izanamiIt.hasNext()) {
-            Map.Entry<UUID, Looped> en = izanamiIt.next();
-            Looped state = en.getValue();
-            ServerLevel lv = server.getLevel(state.dim());
-            Entity ent = lv == null ? null : lv.getEntity(en.getKey());
-            if (ent == null || !ent.isAlive() || lv.getGameTime() >= state.end()) {
-                if (state.disabledAi() && ent instanceof Mob mob) mob.setNoAi(false);
-                izanamiIt.remove();
-            }
-        }
 
         // Novo Amaterasu: fogo preto que segue o alvo
         if (tc % 10 == 0) {
@@ -132,6 +101,36 @@ public final class AbilityScheduler {
                     }
                 }
             }
+
+            // Izanami: loop de posicao a cada 1 s
+            Iterator<Map.Entry<UUID, IzanamiLock>> it3 = IZANAMI.entrySet().iterator();
+            while (it3.hasNext()) {
+                Map.Entry<UUID, IzanamiLock> en = it3.next();
+                IzanamiLock lock = en.getValue();
+                ServerLevel lv = server.getLevel(lock.dim());
+                Entity ent = lv == null ? null : lv.getEntity(en.getKey());
+                boolean finished = ent == null || !ent.isAlive() || lv.getGameTime() >= lock.end();
+                if (ent instanceof LivingEntity le) {
+                    if (finished) {
+                        if (lock.disabledAi() && le instanceof Mob m) m.setNoAi(false);
+                    } else {
+                        // teleporta de volta para a pose inicial (loop)
+                        if (le instanceof ServerPlayer sp) {
+                            sp.connection.teleport(lock.x(), lock.y(), lock.z(), lock.yRot(), lock.xRot());
+                        } else {
+                            le.moveTo(lock.x(), lock.y(), lock.z(), lock.yRot(), lock.xRot());
+                            le.setYHeadRot(lock.yRot());
+                            if (le instanceof Mob m) m.getNavigation().stop();
+                        }
+                        le.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
+                        le.fallDistance = 0.0F;
+                        le.hurtMarked = true;
+                        lv.sendParticles(ParticleTypes.REVERSE_PORTAL, le.getX(), le.getY() + 1.0, le.getZ(),
+                                8, 0.3, 0.4, 0.3, 0.02);
+                    }
+                }
+                if (finished) it3.remove();
+            }
         }
     }
 
@@ -146,26 +145,6 @@ public final class AbilityScheduler {
 
     @SubscribeEvent
     public static void onAttack(LivingAttackEvent e) {
-        // Izanagi cancela apenas o golpe que seria fatal durante a janela de 5 segundos.
-        if (e.getEntity() instanceof ServerPlayer player) {
-            Izanagi state = IZANAGI.get(player.getUUID());
-            if (state != null && state.dim().equals(player.level().dimension())
-                    && player.getHealth() > 0.0F && e.getAmount() >= player.getHealth()) {
-                e.setCanceled(true);
-                IZANAGI.remove(player.getUUID());
-                player.setHealth(Math.max(1.0F, player.getMaxHealth() * 0.5F));
-                player.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 0));
-                player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.TOTEM_USE,
-                        net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 0.8F);
-                if (player.level() instanceof ServerLevel serverLevel) {
-                    serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL, player.getX(), player.getY() + 1.0,
-                            player.getZ(), 50, 0.5, 0.8, 0.5, 0.08);
-                }
-                player.displayClientMessage(net.minecraft.network.chat.Component.literal(
-                        "Izanagi reescreveu sua realidade! Cegueira: 5 segundos."), true);
-                return;
-            }
-        }
         Entity attacker = e.getSource().getEntity();
         if (attacker == null) return;
         Controlled c = CONTROLLED.get(attacker.getUUID());
@@ -179,7 +158,6 @@ public final class AbilityScheduler {
         BURNING.clear();
         TSUKUYOMI.clear();
         CONTROLLED.clear();
-        IZANAGI.clear();
         IZANAMI.clear();
         TimeStopHandler.clear();
         RewindHandler.clear();
