@@ -50,6 +50,8 @@ public final class AbilityHandler {
             case TSUKUYOMI -> tsukuyomi(p);
             case REWIND -> RewindHandler.rewind(p);
             case TIME_STOP -> TimeStopHandler.start(p);
+            case IZANAGI -> izanagi(p);
+            case IZANAMI -> izanami(p);
         };
         if (ok) {
             p.getPersistentData().putLong(cdKey(a), now + a.cooldownTicks);
@@ -58,6 +60,53 @@ public final class AbilityHandler {
 
     static void msg(ServerPlayer p, String key) {
         p.sendSystemMessage(Component.translatable("msg." + MangekyouAddon.MODID + "." + key));
+    }
+
+
+    // --------------------------------------------------------------- Izanagi
+    // Abre uma janela de 5 segundos para reescrever um golpe fatal.
+    // Ao terminar (ou ao salvar o usuario), causa cegueira temporaria de 5 segundos.
+    private static boolean izanagi(ServerPlayer p) {
+        long now = p.level().getGameTime();
+        if (AbilityScheduler.IZANAGI.containsKey(p.getUUID())) {
+            msg(p, "izanagi_active");
+            return false;
+        }
+        AbilityScheduler.IZANAGI.put(p.getUUID(),
+                new AbilityScheduler.Izanagi(p.level().dimension(), now + 100));
+        p.level().playSound(null, p.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 1.0F, 0.65F);
+        p.level().levelEvent(2001, p.blockPosition(), 0);
+        return true;
+    }
+
+    // --------------------------------------------------------------- Izanami
+    // Prende o alvo em um ciclo de genjutsu por 10 segundos.
+    private static boolean izanami(ServerPlayer p) {
+        ServerLevel lv = (ServerLevel) p.level();
+        LivingEntity target = Targeting.livingInSight(p, 32.0D);
+        if (target == null || target == p
+                || (target instanceof net.minecraft.world.entity.player.Player pl && (pl.isCreative() || pl.isSpectator()))) {
+            msg(p, "no_target");
+            return false;
+        }
+        int duration = 200; // 10 segundos
+        boolean disabledAi = false;
+        if (target instanceof Mob mob && !mob.isNoAi()) {
+            mob.setNoAi(true);
+            disabledAi = true;
+        }
+        target.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, duration, 0));
+        target.addEffect(new MobEffectInstance(MobEffects.DARKNESS, duration, 0));
+        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, duration, 255));
+        target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, duration, 2));
+        AbilityScheduler.IZANAMI.put(target.getUUID(),
+                new AbilityScheduler.Looped(lv.dimension(), lv.getGameTime() + duration, disabledAi));
+        // O uso do Izanami deixa o usuario temporariamente cego, nunca permanentemente.
+        p.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 100, 0));
+        lv.playSound(null, target.blockPosition(), SoundEvents.ENDERMAN_STARE, SoundSource.PLAYERS, 1.0F, 0.45F);
+        lv.sendParticles(ParticleTypes.REVERSE_PORTAL, target.getX(), target.getY() + 1.0, target.getZ(),
+                45, 0.5, 0.8, 0.5, 0.08);
+        return true;
     }
 
     // ---------------------------------------------------------- Novo Amaterasu

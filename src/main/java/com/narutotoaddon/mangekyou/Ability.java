@@ -6,7 +6,9 @@ public enum Ability {
     KOTOAMATSUKAMI("kotoamatsukami", 3600),
     TSUKUYOMI("tsukuyomi", 800),
     REWIND("rewind", 200),
-    TIME_STOP("time_stop", 1200);
+    TIME_STOP("time_stop", 1200),
+    IZANAGI("izanagi", 6000),
+    IZANAMI("izanami", 2400);
 
     /** Prefixo das chaves de jutsu gravadas nos slots do Narutoto (tambem e a chave de traducao). */
     public static final String JUTSU_PREFIX = "jutsu.mkaddon.";

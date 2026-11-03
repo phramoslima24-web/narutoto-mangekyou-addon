@@ -37,5 +37,8 @@
   "key.narutoto_mangekyou.cycle": "Trocar jutsu do implante",
   "key.categories.narutoto_mangekyou": "Narutoto - Mangekyou Addon",
   "msg.narutoto_mangekyou.no_implant": "Você não tem implante. Clique com o botão direito em um dos Mangekyou.",
-  "msg.narutoto_mangekyou.own_selected": "Jutsu do implante: %s"
+  "msg.narutoto_mangekyou.own_selected": "Jutsu do implante: %s",
+  "jutsu.mkaddon.izanagi": "Izanagi",
+  "jutsu.mkaddon.izanami": "Izanami",
+  "msg.narutoto_mangekyou.izanagi_active": "O Izanagi já está ativo."
 }
