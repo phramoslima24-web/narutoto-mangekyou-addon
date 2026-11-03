@@ -47,18 +47,15 @@ public class MangekyouAddon {
         event.enqueueWork(Net::register);
     }
 
-    /** Palavras (no nome de registro) dos olhos ORIGINAIS do Narutoto que ficam escondidos: eles nao tem Izanagi/Izanami. */
-    private static final String[] HIDE_WORDS = {"mangekyou", "mangekyo", "itachi", "shisui", "madara"};
-    /** Nunca esconder o que tiver isso no nome (Rinnesharingan fica). */
-    private static final String[] KEEP_WORDS = {"rinne", "rinnesharingan", "rinesharingan"};
+    /** Itens ORIGINAIS do Narutoto escondidos: o olho do Itachi original nao tem Izanagi/Izanami (os do addon tem). */
+    private static final java.util.Set<String> HIDE_ORIGINAL = java.util.Set.of("itachi_eyeball");
 
     private static boolean hideOriginal(ItemStack stack) {
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (id == null || !id.getNamespace().equals("narutoto")) return false;
         String path = id.getPath().toLowerCase();
-        for (String k : KEEP_WORDS) if (path.contains(k)) return false;
-        for (String h : HIDE_WORDS) if (path.contains(h)) return true;
-        return false;
+        if (path.contains("rinne")) return false; // Rinnesharingan/Rinnegan nunca some
+        return HIDE_ORIGINAL.contains(path);
     }
 
     private void addToCreativeTab(BuildCreativeModeTabContentsEvent event) {

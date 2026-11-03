@@ -38,4 +38,4 @@ Nos dois, o custo do olho e **cegueira de 5 segundos** no usuario (nao e permane
 - Particulas extras no Tsukuyomi.
 
 ## Olhos repetidos
-Os olhos **originais** do Narutoto (Mangekyou/Itachi/Shisui/Madara, sem Izanagi e Izanami) ficam escondidos da aba criativa e da busca. Os do addon continuam, e o **Rinnesharingan** nao e tocado. A lista de palavras esta em `MangekyouAddon.java` (`HIDE_WORDS` / `KEEP_WORDS`); se algum olho original sobrar ou algo errado sumir, e so ajustar ali.
+O **Itachi's Eyeball** original do Narutoto (`narutoto:itachi_eyeball`, sem Izanagi e Izanami) fica escondido da aba criativa e da busca. Os tres olhos do addon continuam, e Sharingan Eyeball, Byakugan Eyeball e Rinnesharingan nao sao tocados. Para esconder outro item original, e so por o nome dele em `HIDE_ORIGINAL` em `MangekyouAddon.java`.
