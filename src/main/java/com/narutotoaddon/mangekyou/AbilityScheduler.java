@@ -123,6 +123,7 @@ public final class AbilityScheduler {
     public static void onServerStopped(ServerStoppedEvent e) {
         BURNING.clear();
         TSUKUYOMI.clear();
+        IzanamiHandler.clear();
         CONTROLLED.clear();
         TimeStopHandler.clear();
         RewindHandler.clear();

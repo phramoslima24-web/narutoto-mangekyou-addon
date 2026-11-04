@@ -21,6 +21,7 @@ import org.joml.Matrix4f;
  * o recorte dos olhos (154x95 da textura 1500x1500) numa textura ampliada 4x.
  */
 public class EyeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<AbstractClientPlayer>> {
+    private static final boolean SWAP_EYE_SIDES = false;
     private static final float HALF = 2.1F;
     // recorte da regiao dos olhos na textura original 1500x1500 do Narutoto
     private static final float U0 = 673F / 1500F, U1 = 827F / 1500F, V0 = 725F / 1500F, V1 = 820F / 1500F;
@@ -43,26 +44,43 @@ public class EyeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Abst
         double pos = Bridge.getDouble(player, "sharingan_position", 2);
         float yOff = pos == 0 ? -0.3F : (pos == 1 ? -0.25F : -0.2F);
 
-        ResourceLocation tex = new ResourceLocation(MangekyouAddon.MODID,
-                "textures/entity/mangekyou_eyes_" + implant.id + ".png");
+        int blind = ClientState.blind(player.getUUID());
+        // Metade esquerda da textura = olho DIREITO do personagem (visto de frente).
+        // Se no jogo estiver invertido, troque SWAP_EYE_SIDES para true.
+        boolean rightEyeBlind = (blind & 2) != 0;
+        boolean leftEyeBlind = (blind & 1) != 0;
+        boolean texLeftBlind = SWAP_EYE_SIDES ? leftEyeBlind : rightEyeBlind;
+        boolean texRightBlind = SWAP_EYE_SIDES ? rightEyeBlind : leftEyeBlind;
 
         ps.pushPose();
         getParentModel().head.translateAndRotate(ps);
         ps.translate(0.0D, 0.0D, -0.2705D); // 0.0005 na frente do quadro do mod
         ps.translate(0.0D, yOff, 0.0D);
 
-        VertexConsumer vc = buffers.getBuffer(RenderType.entityCutoutNoCull(tex));
         PoseStack.Pose pose = ps.last();
         Matrix4f m = pose.pose();
         Matrix3f n = pose.normal();
 
-        float xl = -HALF + U0 * 2 * HALF, xr = -HALF + U1 * 2 * HALF;
+        float xl = -HALF + U0 * 2 * HALF, xr = -HALF + U1 * 2 * HALF, xm = (xl + xr) / 2F;
         float yt = -HALF + V0 * 2 * HALF, yb = -HALF + V1 * 2 * HALF;
-        vertex(vc, m, n, xl, yb, 0F, 1F, light);
-        vertex(vc, m, n, xr, yb, 1F, 1F, light);
-        vertex(vc, m, n, xr, yt, 1F, 0F, light);
-        vertex(vc, m, n, xl, yt, 0F, 0F, light);
+
+        VertexConsumer left = buffers.getBuffer(RenderType.entityCutoutNoCull(texture(implant, texLeftBlind)));
+        vertex(left, m, n, xl, yb, 0F, 1F, light);
+        vertex(left, m, n, xm, yb, 0.5F, 1F, light);
+        vertex(left, m, n, xm, yt, 0.5F, 0F, light);
+        vertex(left, m, n, xl, yt, 0F, 0F, light);
+
+        VertexConsumer right = buffers.getBuffer(RenderType.entityCutoutNoCull(texture(implant, texRightBlind)));
+        vertex(right, m, n, xm, yb, 0.5F, 1F, light);
+        vertex(right, m, n, xr, yb, 1F, 1F, light);
+        vertex(right, m, n, xr, yt, 1F, 0F, light);
+        vertex(right, m, n, xm, yt, 0.5F, 0F, light);
         ps.popPose();
+    }
+
+    private static ResourceLocation texture(Implant implant, boolean blind) {
+        return new ResourceLocation(MangekyouAddon.MODID,
+                "textures/entity/mangekyou_eyes_" + implant.id + (blind && implant.canBlind() ? "_blind" : "") + ".png");
     }
 
     private static void vertex(VertexConsumer vc, Matrix4f m, Matrix3f n, float x, float y, float u, float v, int light) {

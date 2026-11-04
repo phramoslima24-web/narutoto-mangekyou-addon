@@ -28,8 +28,7 @@ public class ImplantItem extends Item {
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
         ItemStack stack = player.getItemInHand(hand);
         if (!level.isClientSide() && player instanceof ServerPlayer sp) {
-            Implants.apply(sp, implant);
-            if (!sp.getAbilities().instabuild) {
+            if (Implants.apply(sp, implant) && !sp.getAbilities().instabuild) {
                 stack.shrink(1);
             }
         }
@@ -51,6 +50,16 @@ public class ImplantItem extends Item {
             tooltip.add(Component.literal(" - ").append(Component.translatable(a.jutsuKey()))
                     .withStyle(ChatFormatting.DARK_RED));
         }
-        tooltip.add(Component.translatable("tooltip." + MangekyouAddon.MODID + ".help").withStyle(ChatFormatting.DARK_GRAY));
+        if (implant.allows(Ability.NOVO_AMATERASU)) {
+            tooltip.add(Component.translatable("tooltip." + MangekyouAddon.MODID + ".help").withStyle(ChatFormatting.DARK_GRAY));
+        }
+        if (implant.canBlind()) {
+            tooltip.add(Component.translatable("tooltip." + MangekyouAddon.MODID + ".blind_cost").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.translatable("tooltip." + MangekyouAddon.MODID + ".blind_cure").withStyle(ChatFormatting.GRAY));
+        }
+        if (implant == Implant.RINNE) {
+            tooltip.add(Component.translatable("tooltip." + MangekyouAddon.MODID + ".rinne_passive").withStyle(ChatFormatting.DARK_GRAY));
+            tooltip.add(Component.translatable("tooltip." + MangekyouAddon.MODID + ".rinne_moon").withStyle(ChatFormatting.DARK_GRAY));
+        }
     }
 }

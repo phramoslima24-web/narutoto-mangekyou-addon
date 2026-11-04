@@ -10,6 +10,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterKeyMappingsEvent;
+import net.minecraftforge.client.event.RenderGuiEvent;
 import net.minecraftforge.client.event.ScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -36,11 +37,44 @@ public final class ClientEvents {
         var modBus = FMLJavaModLoadingContext.get().getModEventBus();
         modBus.addListener(ClientEvents::onRegisterKeys);
         modBus.addListener(ClientEvents::onAddLayers);
+        modBus.addListener(ClientEvents::onRegisterRenderers);
     }
 
     public static void onRegisterKeys(RegisterKeyMappingsEvent e) {
         e.register(USE_KEY);
         e.register(CYCLE_KEY);
+    }
+
+    public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers e) {
+        e.registerEntityRenderer(ModEntities.IZANAGI_BODY.get(), IzanagiBodyRenderer::new);
+    }
+
+    /**
+     * Um olho cego: a metade da tela do lado desse olho fica preta, com uma faixa branca leitosa na borda.
+     * Os dois cegos: a tela inteira fica preta (cegueira escondida aplicada pelo servidor) e as criaturas
+     * em volta brilham em branco (efeito Glowing aplicado pelo servidor).
+     */
+    @SubscribeEvent
+    public static void onRenderGui(RenderGuiEvent.Pre e) {
+        int mask = ClientState.myBlind();
+        if (mask == 0 || mask == 3) return;
+        int w = e.getWindow().getGuiScaledWidth(), h = e.getWindow().getGuiScaledHeight();
+        GuiGraphics g = e.getGuiGraphics();
+        int mid = w / 2, band = 28;
+        if ((mask & 1) != 0) {
+            g.fill(0, 0, mid - band, h, 0xFF000000);
+            for (int i = 0; i < band; i++) {
+                int a = 255 - (int) (150 * (i / (float) band)); // borda: branco leitoso -> preto
+                g.fill(mid - band + i, 0, mid - band + i + 1, h, (a << 24) | 0xFFFFFF);
+            }
+        }
+        if ((mask & 2) != 0) {
+            g.fill(mid + band, 0, w, h, 0xFF000000);
+            for (int i = 0; i < band; i++) {
+                int a = 105 + (int) (150 * (i / (float) band));
+                g.fill(mid + i, 0, mid + i + 1, h, (a << 24) | 0xFFFFFF);
+            }
+        }
     }
 
     /** Coloca a camada dos olhos do implante nos dois modelos de jogador (normal e slim). */

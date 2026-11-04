@@ -37,11 +37,28 @@ public final class AbilityHandler {
             BlackFire.extinguishAll(p);
             return;
         }
+        // olhos cegos: o jutsu precisa de um olho que ainda enxergue (o certo, se for jutsu de olho especifico)
+        int blind = Implants.blindMask(p);
+        if (blind == 3) {
+            msg(p, "both_blind");
+            return;
+        }
+        if (a.eye != Ability.Eye.ANY && (blind & a.eye) != 0) {
+            msg(p, "eye_blind");
+            return;
+        }
         long now = p.level().getGameTime();
         long cdEnd = p.getPersistentData().getLong(cdKey(a));
         if (now < cdEnd && !p.getAbilities().instabuild) {
             long secs = (cdEnd - now + 19) / 20;
             p.displayClientMessage(Component.translatable("msg." + MangekyouAddon.MODID + ".cooldown", secs), true);
+            return;
+        }
+        // chakra do Narutoto (se nao der para ler a variavel, nao cobra)
+        boolean pay = a.chakraCost > 0 && !p.getAbilities().instabuild;
+        double chakra = pay ? Bridge.getDouble(p, "chakra", -1) : -1;
+        if (pay && chakra >= 0 && chakra < a.chakraCost) {
+            p.displayClientMessage(Component.translatable("msg." + MangekyouAddon.MODID + ".no_chakra", a.chakraCost), true);
             return;
         }
         boolean ok = switch (a) {
@@ -50,11 +67,22 @@ public final class AbilityHandler {
             case TSUKUYOMI -> tsukuyomi(p);
             case REWIND -> RewindHandler.rewind(p);
             case TIME_STOP -> TimeStopHandler.start(p);
-            case IZANAGI -> IzanagiHandler.arm(p);
-            case IZANAMI -> IzanamiHandler.start(p);
+            case IZANAGI_LEFT, IZANAGI_RIGHT -> IzanagiHandler.arm(p, a.eye);
+            case IZANAMI_LEFT, IZANAMI_RIGHT -> IzanamiHandler.cast(p, a);
+            case MUGEN_TSUKUYOMI -> RinneAbilities.mugenTsukuyomi(p);
+            case SHINJU_ROOTS -> RinneAbilities.shinjuRoots(p);
+            case AMENOMINAKA -> RinneAbilities.amenominaka(p);
         };
         if (ok) {
             p.getPersistentData().putLong(cdKey(a), now + a.cooldownTicks);
+            if (pay) {
+                // le de novo: a habilidade pode ter mexido no chakra (ex.: Tsukuyomi Infinito)
+                double now2 = Bridge.getDouble(p, "chakra", -1);
+                if (now2 >= 0) {
+                    Bridge.setDouble(p, "chakra", Math.max(0, now2 - a.chakraCost));
+                    Bridge.sync(p);
+                }
+            }
         }
     }
 

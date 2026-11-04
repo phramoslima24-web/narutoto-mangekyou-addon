@@ -6,6 +6,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Entity;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
@@ -34,14 +37,14 @@ public final class Implants {
         return s < 0 || s >= 2;
     }
 
-    private static void msg(ServerPlayer p, String key, Object... args) {
+    static void msg(ServerPlayer p, String key, Object... args) {
         p.sendSystemMessage(Component.translatable("msg." + MangekyouAddon.MODID + "." + key, args));
     }
 
     public static void sync(ServerPlayer p) {
         Implant i = get(p);
         Net.CH.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p),
-                new SyncImplantPacket(p.getUUID(), i == null ? "" : i.id));
+                new SyncImplantPacket(p.getUUID(), i == null ? "" : i.id, i == null ? 0 : blindMask(p)));
     }
 
     private static void sound(ServerPlayer p, String modSound, SoundEvent fallback, float pitch) {
@@ -49,12 +52,46 @@ public final class Implants {
         p.level().playSound(null, p.blockPosition(), s != null ? s : fallback, SoundSource.PLAYERS, 1.0F, pitch);
     }
 
-    public static void apply(ServerPlayer p, Implant implant) {
+    // ---------------------------------------------------------------- Cegueira
+    private static final String TAG_BLIND_MASK = "mkaddon_blind_mask";
+
+    /** Olhos cegos: bit 1 = esquerdo, bit 2 = direito. */
+    public static int blindMask(Entity e) {
+        return e.getPersistentData().getInt(TAG_BLIND_MASK) & 3;
+    }
+
+    /** Cega o olho usado (Izanagi / Izanami). So o Mangekyou do Itachi devolve a visao. */
+    public static void blind(ServerPlayer p, int eyeBit) {
+        int mask = blindMask(p) | (eyeBit & 3);
+        p.getPersistentData().putInt(TAG_BLIND_MASK, mask);
+        msg(p, (eyeBit & 1) != 0 ? "blinded_left" : "blinded_right");
+        if (mask == 3) msg(p, "both_blind_warn");
+        sync(p);
+    }
+
+    /**
+     * Implanta o olho. Se o jogador esta cego, so o Mangekyou do ITACHI e aceito: ele devolve a visao dos
+     * dois olhos. Retorna false se foi recusado (o item nao deve ser consumido).
+     */
+    public static boolean apply(ServerPlayer p, Implant implant) {
+        if (blindMask(p) != 0) {
+            if (implant != Implant.ITACHI) {
+                msg(p, "blind_wrong_eye");
+                return false;
+            }
+            p.getPersistentData().remove(TAG_BLIND_MASK);
+            p.removeEffect(MobEffects.BLINDNESS);
+            if (get(p) == null) p.getPersistentData().putString(TAG, implant.id);
+            sync(p);
+            sound(p, "inject", SoundEvents.PLAYER_LEVELUP, 1.0F);
+            msg(p, "sight_restored");
+            return true;
+        }
         p.getPersistentData().putString(TAG, implant.id);
         sync(p);
         sound(p, "inject", SoundEvents.PLAYER_LEVELUP, 1.0F);
-        // mensagem no chat
         p.sendSystemMessage(Component.translatable("msg." + MangekyouAddon.MODID + ".implant_done"));
+        return true;
     }
 
     private static final String TAG_SEL = "mkaddon_sel";
@@ -103,12 +140,13 @@ public final class Implants {
             return;
         }
         String key = a.jutsuKey();
+        String name = a.jutsuName(); // o Narutoto grava o nome traduzido
         String learned = Bridge.getString(p, "learned_jutsu", "");
-        if (learned.contains(key)) {
+        if (learned.contains(name) || learned.contains(key)) {
             msg(p, "already_learned");
             return;
         }
-        if (!Bridge.setString(p, "learned_jutsu", learned + key) || !Bridge.setString(p, "jutsu_key", key)) {
+        if (!Bridge.setString(p, "learned_jutsu", learned + name) || !Bridge.setString(p, "jutsu_key", name)) {
             msg(p, "bridge_error");
             return;
         }
@@ -137,6 +175,20 @@ public final class Implants {
                     Component.translatable(imp.nameKey())));
         }
         p.getPersistentData().putDouble(TAG_STAGE, st);
+        // cego dos dois olhos: tela toda preta (cegueira escondida) e criaturas em volta brilham em branco
+        if (blindMask(p) == 3) {
+            p.addEffect(new MobEffectInstance(MobEffects.BLINDNESS, 60, 0, false, false, false));
+            for (LivingEntity le : p.level().getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(24.0D),
+                    x -> x != p && x.isAlive())) {
+                le.addEffect(new MobEffectInstance(MobEffects.GLOWING, 30, 0, false, false, false));
+            }
+        }
+        // custo de chakra do jutsu do addon selecionado (o Narutoto so conhece os custos dos jutsus dele)
+        Ability sel = Ability.byJutsuKey(Bridge.getString(p, "jutsu_choosed_name", ""));
+        if (sel != null && Bridge.getDouble(p, "chakra_cost", -1) != sel.chakraCost) {
+            Bridge.setDouble(p, "chakra_cost", sel.chakraCost);
+            Bridge.sync(p);
+        }
     }
 
     @SubscribeEvent
@@ -144,7 +196,7 @@ public final class Implants {
         if (e.getTarget() instanceof ServerPlayer target && e.getEntity() instanceof ServerPlayer viewer) {
             Implant i = get(target);
             if (i != null) {
-                Net.CH.send(PacketDistributor.PLAYER.with(() -> viewer), new SyncImplantPacket(target.getUUID(), i.id));
+                Net.CH.send(PacketDistributor.PLAYER.with(() -> viewer), new SyncImplantPacket(target.getUUID(), i.id, blindMask(target)));
             }
         }
     }
@@ -166,7 +218,11 @@ public final class Implants {
 
     @SubscribeEvent
     public static void onClone(PlayerEvent.Clone e) {
-        String old = e.getOriginal().getPersistentData().getString(TAG);
-        if (!old.isEmpty()) e.getEntity().getPersistentData().putString(TAG, old);
+        var from = e.getOriginal().getPersistentData();
+        var to = e.getEntity().getPersistentData();
+        String old = from.getString(TAG);
+        if (!old.isEmpty()) to.putString(TAG, old);
+        // a cegueira sobrevive a morte: so o Mangekyou do Itachi devolve a visao
+        if (from.getInt(TAG_BLIND_MASK) != 0) to.putInt(TAG_BLIND_MASK, from.getInt(TAG_BLIND_MASK));
     }
 }

@@ -4,10 +4,10 @@ license="MIT"
 
 [[mods]]
 modId="narutoto_mangekyou"
-version="2.1.0"
+version="2.3.0"
 displayName="Narutoto - Mangekyou Addon"
 description='''
-Addon para o Narutoto: Ninja World. Implantes de Mangekyou (Itachi, Shisui, Madara) com jutsus no menu de dojutsu.
+Addon para o Narutoto: Ninja World. Implantes de Mangekyou (Itachi, Shisui, Madara, com Izanagi e Izanami) e Rinne Sharingan com jutsus no menu de dojutsu.
 '''
 
 [[dependencies.narutoto_mangekyou]]

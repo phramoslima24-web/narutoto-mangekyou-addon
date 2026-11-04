@@ -67,6 +67,17 @@ public final class Bridge {
         }
     }
 
+    public static boolean setDouble(Entity e, String name, double value) {
+        try {
+            Object v = vars(e);
+            if (v == null) return false;
+            field(v, name).setDouble(v, value);
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     public static boolean setString(Entity e, String name, String value) {
         try {
             Object v = vars(e);

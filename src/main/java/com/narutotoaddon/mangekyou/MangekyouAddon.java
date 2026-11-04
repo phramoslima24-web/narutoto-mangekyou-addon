@@ -30,6 +30,7 @@ public class MangekyouAddon {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
+        ModEntities.ENTITIES.register(modBus);
         modBus.addListener(this::commonSetup);
         modBus.addListener(this::addToCreativeTab);
 
@@ -37,8 +38,10 @@ public class MangekyouAddon {
         MinecraftForge.EVENT_BUS.register(TimeStopHandler.class);
         MinecraftForge.EVENT_BUS.register(RewindHandler.class);
         MinecraftForge.EVENT_BUS.register(Implants.class);
+        MinecraftForge.EVENT_BUS.register(RinneAbilities.class);
         MinecraftForge.EVENT_BUS.register(IzanagiHandler.class);
         MinecraftForge.EVENT_BUS.register(IzanamiHandler.class);
+        MinecraftForge.EVENT_BUS.register(EyeDrops.class);
 
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> ClientEvents::register);
     }
@@ -54,12 +57,11 @@ public class MangekyouAddon {
         ResourceLocation id = ForgeRegistries.ITEMS.getKey(stack.getItem());
         if (id == null || !id.getNamespace().equals("narutoto")) return false;
         String path = id.getPath().toLowerCase();
-        if (path.contains("rinne")) return false; // Rinnesharingan/Rinnegan nunca some
+        if (path.contains("rinne")) return false;
         return HIDE_ORIGINAL.contains(path);
     }
 
     private void addToCreativeTab(BuildCreativeModeTabContentsEvent event) {
-        // tira os olhos originais repetidos (sem Izanagi/Izanami) de qualquer aba, inclusive da busca
         List<ItemStack> toRemove = new ArrayList<>();
         for (java.util.Map.Entry<ItemStack, CreativeModeTab.TabVisibility> en : event.getEntries()) {
             if (hideOriginal(en.getKey())) toRemove.add(en.getKey());
@@ -70,6 +72,7 @@ public class MangekyouAddon {
             event.accept(ModItems.MANGEKYOU_ITACHI);
             event.accept(ModItems.MANGEKYOU_SHISUI);
             event.accept(ModItems.MANGEKYOU_MADARA);
+            event.accept(ModItems.RINNE_SHARINGAN);
         }
     }
 }

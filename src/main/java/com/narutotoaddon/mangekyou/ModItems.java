@@ -15,6 +15,8 @@ public final class ModItems {
             ITEMS.register("mangekyou_shisui", () -> new ImplantItem(Implant.SHISUI));
     public static final RegistryObject<Item> MANGEKYOU_MADARA =
             ITEMS.register("mangekyou_madara", () -> new ImplantItem(Implant.MADARA));
+    public static final RegistryObject<Item> RINNE_SHARINGAN =
+            ITEMS.register("rinne_sharingan", () -> new ImplantItem(Implant.RINNE));
 
     private ModItems() {}
 }
