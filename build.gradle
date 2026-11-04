@@ -42,6 +42,12 @@ dependencies {
 }
 
 tasks.named('jar', Jar).configure {
+    // Evita que classes/recursos de uma compilacao antiga sejam empacotados
+    // caso o diretorio build/ tenha sobrado de uma versao anterior do addon.
+    // Essa versao usa exclusivamente o pacote mangekyou e o namespace abaixo.
+    exclude 'com/narutotoaddon/mangekyouizanagi/**'
+    exclude 'assets/narutoto_mangekyou_izanagi/**'
+
     manifest {
         attributes([
             'Specification-Title'   : 'narutoto_mangekyou',
