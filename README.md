@@ -58,3 +58,5 @@ O Narutoto guarda o **nome traduzido** do jutsu (`jutsu_key`, `learned_jutsu`, `
 - **Rewind = exatamente 5 s** (`RewindHandler.REWIND_TICKS = 100`; historico de 101 fotos por entidade). O jutsu foi renomeado para "voltar 5 segundos"; o nome antigo continua aceito (`Ability.isLearnedIn`). O Madara nao perde vida ao voltar, apaga o fogo, ganha resistencia/regeneracao e os seres vivos ao redor (12 blocos) ficam lentos/enjoados por 2 s. Recarga mantida (10 s).
 - **Parar o tempo** (Madara): 15 s (antes 10 s), onda de choque, congelados brilham, Madara ganha velocidade/forca/resistencia e causa +75% de dano em congelados. Recarga mantida (60 s).
 - Nada foi compilado nem testado no jogo.
+
+- **Correcao do Rewind**: so pode ser usado com os 101 registros seguidos (exatamente 100 ticks = 5 s); depois de usar, o historico e zerado e precisa acumular os 101 de novo. Buracos no historico (troca de dimensao, morte) reiniciam a contagem. Seres ao redor sem os 101 registros nao sao movidos.

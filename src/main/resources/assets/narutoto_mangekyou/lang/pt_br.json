@@ -28,7 +28,7 @@
   "msg.narutoto_mangekyou.cooldown": "Recarregando... %s s",
   "msg.narutoto_mangekyou.no_target": "Nenhum alvo na mira.",
   "msg.narutoto_mangekyou.invalid_target": "Esse alvo não pode ser afetado.",
-  "msg.narutoto_mangekyou.no_history": "Ainda não há histórico suficiente para voltar no tempo (máx. 5 segundos).",
+  "msg.narutoto_mangekyou.no_history": "É preciso acumular 5 segundos completos de histórico (101 registros) antes de usar o Rewind.",
   "msg.narutoto_mangekyou.already_stopped": "O tempo já está parado aqui.",
   "msg.narutoto_mangekyou.time_stopped": "O tempo parou.",
   "msg.narutoto_mangekyou.time_resumed": "O tempo voltou a correr.",

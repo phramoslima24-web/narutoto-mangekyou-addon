@@ -28,7 +28,7 @@
   "msg.narutoto_mangekyou.cooldown": "On cooldown... %s s",
   "msg.narutoto_mangekyou.no_target": "No target in sight.",
   "msg.narutoto_mangekyou.invalid_target": "This target can't be affected.",
-  "msg.narutoto_mangekyou.no_history": "Not enough history yet to rewind (max. 5 seconds).",
+  "msg.narutoto_mangekyou.no_history": "You must accumulate a full 5 seconds of history (101 records) before using Rewind.",
   "msg.narutoto_mangekyou.already_stopped": "Time is already stopped here.",
   "msg.narutoto_mangekyou.time_stopped": "Time has stopped.",
   "msg.narutoto_mangekyou.time_resumed": "Time flows again.",

@@ -43,15 +43,18 @@ public final class RewindHandler {
      * nova sao necessarias REWIND_TICKS + 1 fotos.
      */
     private static final int HISTORY_TICKS = REWIND_TICKS + 1;
-    /** Historico minimo (0,5 s) para usar o Rewind logo depois de implantar; com o historico cheio volta os 5 s inteiros. */
-    private static final int MIN_HISTORY = 10;
+    /**
+     * Historico minimo para usar o Rewind: os 101 registros completos (= 100 ticks de diferenca). Nunca volta menos
+     * de 5 s: sem os 101 registros o Rewind e recusado.
+     */
+    private static final int MIN_HISTORY = HISTORY_TICKS;
     /** Depois disso sem ver a entidade (ticks) o historico dela e descartado: sempre maior que a janela do Rewind. */
     private static final int FORGET_TICKS = REWIND_TICKS + 40;
     private static final double RECORD_RADIUS = 32.0D;
     /** Raio do choque temporal que desorienta os seres vivos ao redor do Madara. */
     private static final double SHOCK_RADIUS = 12.0D;
 
-    private record Snap(ResourceKey<Level> dim, double x, double y, double z, float yRot, float xRot, float health) {}
+    private record Snap(long tick, ResourceKey<Level> dim, double x, double y, double z, float yRot, float xRot, float health) {}
 
     private static final Map<UUID, ArrayDeque<Snap>> HISTORY = new HashMap<>();
     private static final Map<UUID, Long> SEEN = new HashMap<>();
@@ -68,7 +71,10 @@ public final class RewindHandler {
     private static void record(LivingEntity le, long now, Set<UUID> done) {
         if (!le.isAlive() || !done.add(le.getUUID())) return;
         ArrayDeque<Snap> dq = HISTORY.computeIfAbsent(le.getUUID(), k -> new ArrayDeque<>());
-        dq.addLast(new Snap(le.level().dimension(), le.getX(), le.getY(), le.getZ(),
+        // os registros precisam ser de ticks seguidos: se houve um buraco ou troca de dimensao, recomeca do zero
+        Snap last = dq.peekLast();
+        if (last != null && (last.tick() != now - 1 || !last.dim().equals(le.level().dimension()))) dq.clear();
+        dq.addLast(new Snap(now, le.level().dimension(), le.getX(), le.getY(), le.getZ(),
                 le.getYRot(), le.getXRot(), le.getHealth()));
         while (dq.size() > HISTORY_TICKS) dq.removeFirst();
         SEEN.put(le.getUUID(), now);
@@ -101,18 +107,26 @@ public final class RewindHandler {
         }
     }
 
+    /** 101 registros seguidos, na dimensao atual, com exatamente REWIND_TICKS ticks entre o primeiro e o ultimo. */
+    private static boolean hasFullHistory(ArrayDeque<Snap> dq, ServerLevel lv) {
+        if (dq == null || dq.size() < MIN_HISTORY) return false;
+        Snap first = dq.peekFirst();
+        Snap last = dq.peekLast();
+        return first.dim().equals(lv.dimension()) && last.dim().equals(lv.dimension())
+                && last.tick() - first.tick() == REWIND_TICKS;
+    }
+
     static boolean rewind(ServerPlayer p) {
         ServerLevel lv = (ServerLevel) p.level();
         ArrayDeque<Snap> own = HISTORY.get(p.getUUID());
-        if (own == null || own.size() < MIN_HISTORY) {
+        if (!hasFullHistory(own, lv)) {
             AbilityHandler.msg(p, "no_history");
             return false;
         }
         for (LivingEntity le : lv.getEntitiesOfClass(LivingEntity.class, p.getBoundingBox().inflate(RECORD_RADIUS))) {
             ArrayDeque<Snap> dq = HISTORY.get(le.getUUID());
-            if (dq == null || dq.isEmpty()) continue;
+            if (!hasFullHistory(dq, lv)) continue; // so volta quem tem os 5 s completos registrados
             Snap s = dq.peekFirst();
-            if (!s.dim().equals(lv.dimension())) continue;
             restore(le, s, le == p);
             dq.clear();
         }
