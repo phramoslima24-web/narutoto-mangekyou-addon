@@ -8,19 +8,27 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ClientState {
     private static final Map<UUID, String> IMPLANTS = new ConcurrentHashMap<>();
     private static final Map<UUID, Integer> BLIND = new ConcurrentHashMap<>();
+    private static final Map<UUID, String> BLIND_OWNER = new ConcurrentHashMap<>();
     public static volatile UUID self;
 
     private ClientState() {}
 
-    public static void set(UUID player, String implantId, int blindMask) {
+    public static void set(UUID player, String implantId, int blindMask, String blindOwner) {
         if (implantId == null || implantId.isEmpty()) {
             IMPLANTS.remove(player);
             BLIND.remove(player);
+            BLIND_OWNER.remove(player);
             return;
         }
         IMPLANTS.put(player, implantId);
-        if (blindMask == 0) BLIND.remove(player);
-        else BLIND.put(player, blindMask);
+        if (blindMask == 0) {
+            BLIND.remove(player);
+            BLIND_OWNER.remove(player);
+        } else {
+            BLIND.put(player, blindMask);
+            if (blindOwner == null || blindOwner.isEmpty()) BLIND_OWNER.remove(player);
+            else BLIND_OWNER.put(player, blindOwner);
+        }
     }
 
     public static Implant get(UUID player) {
@@ -30,6 +38,11 @@ public final class ClientState {
     /** Bit 1 = olho esquerdo cego, bit 2 = olho direito cego. */
     public static int blind(UUID player) {
         return player == null ? 0 : BLIND.getOrDefault(player, 0);
+    }
+
+    /** Implante que causou a cegueira (o seu Mangekyou define a textura cega); null se nao ha dono. */
+    public static Implant blindOwner(UUID player) {
+        return player == null ? null : Implant.byId(BLIND_OWNER.get(player));
     }
 
     public static Implant mine() {

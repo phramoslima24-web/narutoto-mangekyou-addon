@@ -44,7 +44,8 @@ public final class Implants {
     public static void sync(ServerPlayer p) {
         Implant i = get(p);
         Net.CH.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p),
-                new SyncImplantPacket(p.getUUID(), i == null ? "" : i.id, i == null ? 0 : blindMask(p)));
+                new SyncImplantPacket(p.getUUID(), i == null ? "" : i.id, i == null ? 0 : blindMask(p),
+                        i == null ? "" : blindOwnerId(p)));
     }
 
     private static void sound(ServerPlayer p, String modSound, SoundEvent fallback, float pitch) {
@@ -54,34 +55,69 @@ public final class Implants {
 
     // ---------------------------------------------------------------- Cegueira
     private static final String TAG_BLIND_MASK = "mkaddon_blind_mask";
+    /** Id do implante (Madara, Itachi ou Shisui) cujo Izanagi/Izanami causou a cegueira atual. */
+    private static final String TAG_BLIND_OWNER = "mkaddon_blind_owner";
 
     /** Olhos cegos: bit 1 = esquerdo, bit 2 = direito. */
     public static int blindMask(Entity e) {
         return e.getPersistentData().getInt(TAG_BLIND_MASK) & 3;
     }
 
-    /** Cega o olho usado (Izanagi / Izanami). So o Mangekyou do Itachi devolve a visao. */
+    /**
+     * Quem "possui" a cegueira atual: so o Mangekyou desse personagem devolve a visao. Em saves antigos (sem o
+     * dono gravado) vale o implante atual do jogador, ou o Itachi (unico que curava antes).
+     */
+    public static Implant blindOwner(Entity e) {
+        if (blindMask(e) == 0) return null;
+        Implant o = Implant.byId(e.getPersistentData().getString(TAG_BLIND_OWNER));
+        if (o != null && o.canBlind()) return o;
+        Implant cur = get(e);
+        return cur != null && cur.canBlind() ? cur : Implant.ITACHI;
+    }
+
+    /** Id do dono da cegueira ("" se nao esta cego). Usado na sincronizacao com o cliente. */
+    public static String blindOwnerId(Entity e) {
+        Implant o = blindOwner(e);
+        return o == null ? "" : o.id;
+    }
+
+    /** Cega o olho usado (Izanagi / Izanami). So o Mangekyou do MESMO personagem devolve a visao. */
     public static void blind(ServerPlayer p, int eyeBit) {
         int mask = blindMask(p) | (eyeBit & 3);
+        if (blindMask(p) == 0) {
+            // primeira cegueira: grava de qual Mangekyou ela veio (enquanto cego nao da para trocar de implante)
+            Implant cur = get(p);
+            if (cur != null && cur.canBlind()) p.getPersistentData().putString(TAG_BLIND_OWNER, cur.id);
+            else p.getPersistentData().remove(TAG_BLIND_OWNER);
+        }
         p.getPersistentData().putInt(TAG_BLIND_MASK, mask);
-        msg(p, (eyeBit & 1) != 0 ? "blinded_left" : "blinded_right");
+        Implant owner = blindOwner(p);
+        Component who = Component.translatable(owner.nameKey());
+        msg(p, (eyeBit & 1) != 0 ? "blinded_left" : "blinded_right", who);
         if (mask == 3) msg(p, "both_blind_warn");
         sync(p);
     }
 
+    private static void clearBlind(ServerPlayer p) {
+        p.getPersistentData().remove(TAG_BLIND_MASK);
+        p.getPersistentData().remove(TAG_BLIND_OWNER);
+        p.removeEffect(MobEffects.BLINDNESS);
+    }
+
     /**
-     * Implanta o olho. Se o jogador esta cego, so o Mangekyou do ITACHI e aceito: ele devolve a visao dos
-     * dois olhos. Retorna false se foi recusado (o item nao deve ser consumido).
+     * Implanta o olho. Se o jogador esta cego, so e aceito o Mangekyou do personagem que causou a cegueira
+     * (Madara cura Madara, Itachi cura Itachi, Shisui cura Shisui): ele devolve a visao dos dois olhos.
+     * Retorna false se foi recusado (o item nao deve ser consumido).
      */
     public static boolean apply(ServerPlayer p, Implant implant) {
         if (blindMask(p) != 0) {
-            if (implant != Implant.ITACHI) {
-                msg(p, "blind_wrong_eye");
+            Implant owner = blindOwner(p);
+            if (implant != owner) {
+                msg(p, "blind_wrong_eye", Component.translatable(owner.nameKey()));
                 return false;
             }
-            p.getPersistentData().remove(TAG_BLIND_MASK);
-            p.removeEffect(MobEffects.BLINDNESS);
-            if (get(p) == null) p.getPersistentData().putString(TAG, implant.id);
+            clearBlind(p);
+            p.getPersistentData().putString(TAG, implant.id);
             sync(p);
             sound(p, "inject", SoundEvents.PLAYER_LEVELUP, 1.0F);
             msg(p, "sight_restored");
@@ -142,7 +178,7 @@ public final class Implants {
         String key = a.jutsuKey();
         String name = a.jutsuName(); // o Narutoto grava o nome traduzido
         String learned = Bridge.getString(p, "learned_jutsu", "");
-        if (learned.contains(name) || learned.contains(key)) {
+        if (a.isLearnedIn(learned)) {
             msg(p, "already_learned");
             return;
         }
@@ -196,7 +232,7 @@ public final class Implants {
         if (e.getTarget() instanceof ServerPlayer target && e.getEntity() instanceof ServerPlayer viewer) {
             Implant i = get(target);
             if (i != null) {
-                Net.CH.send(PacketDistributor.PLAYER.with(() -> viewer), new SyncImplantPacket(target.getUUID(), i.id, blindMask(target)));
+                Net.CH.send(PacketDistributor.PLAYER.with(() -> viewer), new SyncImplantPacket(target.getUUID(), i.id, blindMask(target), blindOwnerId(target)));
             }
         }
     }
@@ -222,7 +258,11 @@ public final class Implants {
         var to = e.getEntity().getPersistentData();
         String old = from.getString(TAG);
         if (!old.isEmpty()) to.putString(TAG, old);
-        // a cegueira sobrevive a morte: so o Mangekyou do Itachi devolve a visao
-        if (from.getInt(TAG_BLIND_MASK) != 0) to.putInt(TAG_BLIND_MASK, from.getInt(TAG_BLIND_MASK));
+        // a cegueira sobrevive a morte: so o Mangekyou do mesmo personagem devolve a visao
+        if (from.getInt(TAG_BLIND_MASK) != 0) {
+            to.putInt(TAG_BLIND_MASK, from.getInt(TAG_BLIND_MASK));
+            String owner = from.getString(TAG_BLIND_OWNER);
+            if (!owner.isEmpty()) to.putString(TAG_BLIND_OWNER, owner);
+        }
     }
 }

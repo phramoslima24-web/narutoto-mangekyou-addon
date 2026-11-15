@@ -16,7 +16,7 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 
 /**
- * Desenha os olhos do implante por cima do Mangekyou do Narutoto.
+ * Desenha os olhos do implante por cima do Mangekyou (estagio 2) e do Mangekyou Eterno (estagio 3) do Narutoto.
  * Usa exatamente a mesma geometria do mod (quadro de 2.1 x 2.1 preso a cabeca), so que mostrando apenas
  * o recorte dos olhos (154x95 da textura 1500x1500) numa textura ampliada 4x.
  */
@@ -38,13 +38,20 @@ public class EyeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Abst
         if (player.isInvisible() && (mc.player == null || player.isInvisibleTo(mc.player))) return;
         Implant implant = ClientState.get(player.getUUID());
         if (implant == null) return;
-        // o mod so desenha o Mangekyou no estagio 2
-        if (Bridge.getDouble(player, "if_sharigan", 0) != 2.0D) return;
+        // Estagios do Narutoto (variavel if_sharigan): 1 = Sharingan (nao mexemos), 2 = Mangekyou, 3 = Mangekyou Eterno.
+        // No 2 desenhamos os olhos antigos do implante; no 3 as texturas dos Mangekyous Eternos (Madara/Itachi/Shisui).
+        double stage = Bridge.getDouble(player, "if_sharigan", 0);
+        boolean eternal = stage == 3.0D;
+        if (stage != 2.0D && !eternal) return;
+        if (eternal && implant == Implant.RINNE) return; // o Rinne nao tem versao eterna
 
         double pos = Bridge.getDouble(player, "sharingan_position", 2);
         float yOff = pos == 0 ? -0.3F : (pos == 1 ? -0.25F : -0.2F);
 
         int blind = ClientState.blind(player.getUUID());
+        // a textura cega e a do personagem que causou a cegueira (nunca a de outro)
+        Implant blindImplant = ClientState.blindOwner(player.getUUID());
+        if (blindImplant == null || !blindImplant.canBlind()) blindImplant = implant;
         // Metade esquerda da textura = olho DIREITO do personagem (visto de frente).
         // Se no jogo estiver invertido, troque SWAP_EYE_SIDES para true.
         boolean rightEyeBlind = (blind & 2) != 0;
@@ -64,13 +71,13 @@ public class EyeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Abst
         float xl = -HALF + U0 * 2 * HALF, xr = -HALF + U1 * 2 * HALF, xm = (xl + xr) / 2F;
         float yt = -HALF + V0 * 2 * HALF, yb = -HALF + V1 * 2 * HALF;
 
-        VertexConsumer left = buffers.getBuffer(RenderType.entityCutoutNoCull(texture(implant, texLeftBlind)));
+        VertexConsumer left = buffers.getBuffer(RenderType.entityCutoutNoCull(texture(texLeftBlind ? blindImplant : implant, texLeftBlind, eternal)));
         vertex(left, m, n, xl, yb, 0F, 1F, light);
         vertex(left, m, n, xm, yb, 0.5F, 1F, light);
         vertex(left, m, n, xm, yt, 0.5F, 0F, light);
         vertex(left, m, n, xl, yt, 0F, 0F, light);
 
-        VertexConsumer right = buffers.getBuffer(RenderType.entityCutoutNoCull(texture(implant, texRightBlind)));
+        VertexConsumer right = buffers.getBuffer(RenderType.entityCutoutNoCull(texture(texRightBlind ? blindImplant : implant, texRightBlind, eternal)));
         vertex(right, m, n, xm, yb, 0.5F, 1F, light);
         vertex(right, m, n, xr, yb, 1F, 1F, light);
         vertex(right, m, n, xr, yt, 1F, 0F, light);
@@ -78,9 +85,10 @@ public class EyeLayer extends RenderLayer<AbstractClientPlayer, PlayerModel<Abst
         ps.popPose();
     }
 
-    private static ResourceLocation texture(Implant implant, boolean blind) {
+    private static ResourceLocation texture(Implant implant, boolean blind, boolean eternal) {
+        String base = eternal ? "textures/entity/mangekyou_eternal_" : "textures/entity/mangekyou_eyes_";
         return new ResourceLocation(MangekyouAddon.MODID,
-                "textures/entity/mangekyou_eyes_" + implant.id + (blind && implant.canBlind() ? "_blind" : "") + ".png");
+                base + implant.id + (blind && implant.canBlind() ? "_blind" : "") + ".png");
     }
 
     private static void vertex(VertexConsumer vc, Matrix4f m, Matrix3f n, float x, float y, float u, float v, int light) {

@@ -49,6 +49,24 @@ public enum Ability {
         return JUTSU_PREFIX + id;
     }
 
+    /**
+     * Nomes antigos (ja gravados no Narutoto por quem aprendeu o jutsu antes de ele ser renomeado). O Rewind
+     * passou de 2 para 5 segundos, entao o nome mudou; os saves antigos continuam funcionando.
+     */
+    private static final String[] REWIND_LEGACY_NAMES = {"Olho esquerdo: voltar 2 segundos", "Left eye: rewind 2 seconds"};
+
+    private String[] legacyNames() {
+        return this == REWIND ? REWIND_LEGACY_NAMES : new String[0];
+    }
+
+    /** O texto guardado pelo Narutoto (jutsu_key / learned_jutsu / jutsu_choosed_name) cita este jutsu (nome atual ou antigo)? */
+    public boolean isLearnedIn(String learned) {
+        if (learned == null || learned.isEmpty()) return false;
+        if (learned.contains(jutsuName()) || learned.contains(jutsuKey())) return true;
+        for (String l : legacyNames()) if (learned.contains(l)) return true;
+        return false;
+    }
+
     public static Ability byId(String id) {
         for (Ability a : values()) if (a.id.equals(id)) return a;
         return null;
@@ -58,6 +76,7 @@ public enum Ability {
         if (key == null || key.isEmpty()) return null;
         for (Ability a : values()) {
             if (key.equals(a.jutsuKey()) || key.equals(a.jutsuName())) return a;
+            for (String l : a.legacyNames()) if (key.equals(l)) return a;
         }
         return null;
     }
