@@ -20,5 +20,16 @@ public final class ModItems {
     public static final RegistryObject<Item> RINNE_SHARINGAN =
             ITEMS.register("rinne_sharingan", () -> new ImplantItem(Implant.RINNE));
 
+    /** Item (implante) correspondente a cada olho. */
+    public static Item itemFor(Implant i) {
+        return switch (i) {
+            case ITACHI -> MANGEKYOU_ITACHI.get();
+            case SHISUI -> MANGEKYOU_SHISUI.get();
+            case MADARA -> MANGEKYOU_MADARA.get();
+            case SASUKE -> MANGEKYOU_SASUKE.get();
+            case RINNE -> RINNE_SHARINGAN.get();
+        };
+    }
+
     private ModItems() {}
 }

@@ -23,8 +23,7 @@ public final class AbilityHandler {
     }
 
     public static void use(ServerPlayer p, Ability a) {
-        Implant imp = Implants.get(p);
-        if (imp == null || !imp.allows(a)) {
+        if (a == null || !Implants.owns(p, a)) {
             msg(p, "wrong_implant");
             return;
         }

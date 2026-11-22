@@ -1,5 +1,8 @@
 package com.narutotoaddon.mangekyou;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
@@ -23,8 +26,48 @@ public final class Implants {
     private static final String TAG = "mkaddon_implant";
     private static final String TAG_STAGE = "mkaddon_last_stage";
 
+    /** Lista (CSV) de TODOS os olhos implantados. Nunca e apagada por um novo implante. */
+    private static final String TAG_EYES = "mkaddon_eyes";
+    /** Marca que o primeiro despertar (sorteio) ja aconteceu. Nunca volta a false. */
+    private static final String TAG_AWAKENED = "mkaddon_awakened";
+
+    /** Olho ATIVO: define a aparencia, o Susanoo do personagem e a cegueira. */
     public static Implant get(Entity e) {
         return Implant.byId(e.getPersistentData().getString(TAG));
+    }
+
+    /** Todos os olhos implantados (migra saves antigos que so tinham o olho ativo). */
+    public static List<Implant> eyes(Entity e) {
+        var d = e.getPersistentData();
+        List<Implant> list = EyeSet.parse(d.getString(TAG_EYES));
+        Implant act = get(e);
+        if (act != null && EyeSet.add(list, act)) d.putString(TAG_EYES, EyeSet.write(list)); // save antigo
+        return list;
+    }
+
+    public static boolean has(Entity e, Implant i) {
+        return eyes(e).contains(i);
+    }
+
+    /** O jogador tem algum olho implantado que concede este jutsu? (habilidades de todos os olhos valem juntas) */
+    public static boolean owns(Entity e, Ability a) {
+        return EyeSet.allows(eyes(e), a);
+    }
+
+    public static boolean awakened(Entity e) {
+        return e.getPersistentData().getBoolean(TAG_AWAKENED) || !eyes(e).isEmpty();
+    }
+
+    /** Jutsus de todos os olhos, sem duplicados. */
+    public static List<Ability> abilities(Entity e) {
+        return EyeSet.abilities(eyes(e));
+    }
+
+    private static void store(ServerPlayer p, List<Implant> eyes, Implant active) {
+        var d = p.getPersistentData();
+        d.putString(TAG_EYES, EyeSet.write(eyes));
+        d.putString(TAG, active.id);
+        d.putBoolean(TAG_AWAKENED, true);
     }
 
     /** Estagio do dojutsu no Narutoto: 1 = Sharingan, 2 = Mangekyou... (-1 se nao deu para ler). */
@@ -87,7 +130,11 @@ public final class Implants {
         if (blindMask(p) == 0) {
             // primeira cegueira: grava de qual Mangekyou ela veio (enquanto cego nao da para trocar de implante)
             Implant cur = get(p);
-            if (cur != null && cur.canBlind()) p.getPersistentData().putString(TAG_BLIND_OWNER, cur.id);
+            if (cur == null || !cur.canBlind()) {
+                cur = null;
+                for (Implant i : eyes(p)) if (i.canBlind()) { cur = i; break; }
+            }
+            if (cur != null) p.getPersistentData().putString(TAG_BLIND_OWNER, cur.id);
             else p.getPersistentData().remove(TAG_BLIND_OWNER);
         }
         p.getPersistentData().putInt(TAG_BLIND_MASK, mask);
@@ -110,6 +157,7 @@ public final class Implants {
      * Retorna false se foi recusado (o item nao deve ser consumido).
      */
     public static boolean apply(ServerPlayer p, Implant implant) {
+        List<Implant> eyes = new ArrayList<>(eyes(p));
         if (blindMask(p) != 0) {
             Implant owner = blindOwner(p);
             if (implant != owner) {
@@ -117,57 +165,132 @@ public final class Implants {
                 return false;
             }
             clearBlind(p);
-            p.getPersistentData().putString(TAG, implant.id);
+            EyeSet.add(eyes, implant); // cura: o olho entra na lista se ainda nao estava
+            store(p, eyes, implant);
             sync(p);
             sound(p, "inject", SoundEvents.PLAYER_LEVELUP, 1.0F);
             msg(p, "sight_restored");
+            grantBar(p);
             return true;
         }
-        p.getPersistentData().putString(TAG, implant.id);
+        if (!EyeSet.add(eyes, implant)) {
+            msg(p, "eye_already_owned", Component.translatable(implant.nameKey())); // sem duplicar; item nao e consumido
+            return false;
+        }
+        store(p, eyes, implant); // o olho novo vira o ativo; os anteriores e seus jutsus continuam
         sync(p);
         sound(p, "inject", SoundEvents.PLAYER_LEVELUP, 1.0F);
         p.sendSystemMessage(Component.translatable("msg." + MangekyouAddon.MODID + ".implant_done"));
+        grantBar(p);
         return true;
+    }
+
+    /** Primeiro despertar do Mangekyou: sorteia Sasuke, Madara, Itachi ou Shisui (uma unica vez, salvo para sempre). */
+    public static void awakenLottery(ServerPlayer p) {
+        if (awakened(p)) return;
+        Implant drawn = EyeSet.draw(new java.util.Random(p.getRandom().nextLong()));
+        List<Implant> eyes = new ArrayList<>();
+        EyeSet.add(eyes, drawn);
+        store(p, eyes, drawn);
+        sync(p);
+        sound(p, "inject", SoundEvents.PLAYER_LEVELUP, 1.0F);
+        p.sendSystemMessage(Component.translatable("msg." + MangekyouAddon.MODID + ".awakened_random",
+                Component.translatable(drawn.nameKey())));
+        grantBar(p);
+    }
+
+    /** Troca o olho ativo (aparencia/Susanoo) entre os ja implantados. Nao mexe em jutsus. */
+    public static void cycleActive(ServerPlayer p) {
+        List<Implant> eyes = eyes(p);
+        if (eyes.size() < 2) {
+            msg(p, "single_eye");
+            return;
+        }
+        Implant cur = get(p);
+        Implant next = eyes.get((Math.max(0, eyes.indexOf(cur)) + 1) % eyes.size());
+        store(p, eyes, next);
+        sync(p);
+        p.displayClientMessage(Component.translatable("msg." + MangekyouAddon.MODID + ".active_eye",
+                Component.translatable(next.nameKey())), true);
+    }
+
+    // ------------------------------------------------- Barra original do Narutoto
+    private static final int BAR_SLOTS = 20; // jutsu_key1..jutsu_key20 (PlayerVariables do Narutoto 0.4.1)
+
+    /**
+     * Coloca os jutsus de TODOS os olhos na barra original do Narutoto: grava o nome no learned_jutsu e no
+     * primeiro slot livre (jutsu_keyN). So adiciona o que ainda nao foi aprendido; nunca remove nada.
+     * Se a barra estiver cheia, o jutsu fica aprendido e pode ser posto num slot pelo menu de dojutsu.
+     */
+    public static void grantBar(ServerPlayer p) {
+        if (!mangekyouActive(p)) return;
+        String learned = Bridge.getString(p, "learned_jutsu", null);
+        if (learned == null) return; // variaveis do Narutoto indisponiveis
+        List<Ability> missing = new ArrayList<>();
+        for (Ability a : abilities(p)) if (!a.isLearnedIn(learned)) missing.add(a);
+        if (missing.isEmpty()) return;
+        boolean changed = false;
+        for (Ability a : missing) {
+            String name = a.jutsuName();
+            if (!Bridge.setString(p, "learned_jutsu", learned + name)) break;
+            learned = learned + name;
+            for (int n = 1; n <= BAR_SLOTS; n++) {
+                String f = "jutsu_key" + n;
+                if (Bridge.getString(p, f, "x").isEmpty() && Bridge.setString(p, f, name)) break;
+            }
+            changed = true;
+        }
+        if (!changed) return;
+        Bridge.sync(p);
+        if (p.getServer() != null) {
+            p.getServer().execute(() -> {
+                Bridge.callProcedure("JutsuSwichNameDisplayProcedure", p);
+                Bridge.sync(p);
+            });
+        }
+        sound(p, "learn_jutsu", SoundEvents.PLAYER_LEVELUP, 1.2F);
     }
 
     private static final String TAG_SEL = "mkaddon_sel";
 
     /** Jutsu escolhido pela tecla propria "trocar". */
     public static Ability ownSelected(ServerPlayer p) {
-        Implant i = get(p);
-        if (i == null) return null;
-        return i.abilities[Math.floorMod(p.getPersistentData().getInt(TAG_SEL), i.abilities.length)];
+        List<Ability> all = abilities(p);
+        if (all.isEmpty()) return null;
+        return all.get(Math.floorMod(p.getPersistentData().getInt(TAG_SEL), all.size()));
     }
 
     public static void cycle(ServerPlayer p) {
-        Implant i = get(p);
-        if (i == null) {
+        if (p.isShiftKeyDown()) { // Shift + tecla "trocar": troca o olho ativo
+            cycleActive(p);
+            return;
+        }
+        List<Ability> all = abilities(p);
+        if (all.isEmpty()) {
             msg(p, "no_implant");
             return;
         }
-        int next = (p.getPersistentData().getInt(TAG_SEL) + 1) % i.abilities.length;
+        int next = (p.getPersistentData().getInt(TAG_SEL) + 1) % all.size();
         p.getPersistentData().putInt(TAG_SEL, next);
         p.displayClientMessage(Component.translatable("msg." + MangekyouAddon.MODID + ".own_selected",
-                Component.translatable(i.abilities[next].jutsuKey())), true);
+                Component.translatable(all.get(next).jutsuKey())), true);
     }
 
     /** Tecla propria "usar": jutsu do addon selecionado no menu do Narutoto, senao o escolhido por "trocar". */
     public static void useOwn(ServerPlayer p) {
-        Implant i = get(p);
-        if (i == null) {
+        if (eyes(p).isEmpty()) {
             msg(p, "no_implant");
             return;
         }
         Ability a = Ability.byJutsuKey(Bridge.getString(p, "jutsu_choosed_name", ""));
-        if (a == null || !i.allows(a)) a = ownSelected(p);
+        if (a == null || !owns(p, a)) a = ownSelected(p);
         AbilityHandler.use(p, a);
     }
 
     /** Botao do menu de dojutsu: aprende o jutsu e coloca no slot escolhido. */
     public static void learn(ServerPlayer p, String abilityId) {
-        Implant imp = get(p);
         Ability a = Ability.byId(abilityId);
-        if (imp == null || a == null || !imp.allows(a)) {
+        if (a == null || !owns(p, a)) {
             msg(p, "wrong_implant");
             return;
         }
@@ -205,7 +328,9 @@ public final class Implants {
         if (!(e.player instanceof ServerPlayer p) || p.tickCount % 10 != 0) return;
         double st = stage(p);
         double last = p.getPersistentData().getDouble(TAG_STAGE);
+        if (st >= 2 && !awakened(p)) awakenLottery(p); // 1o despertar: sorteio unico
         Implant imp = get(p);
+        if (st >= 2 && !eyes(p).isEmpty() && p.tickCount % 40 == 0) grantBar(p); // jutsus de todos os olhos na barra
         if (imp != null && st >= 2 && last < 2) {
             p.sendSystemMessage(Component.translatable("msg." + MangekyouAddon.MODID + ".awakened",
                     Component.translatable(imp.nameKey())));
@@ -258,6 +383,9 @@ public final class Implants {
         var to = e.getEntity().getPersistentData();
         String old = from.getString(TAG);
         if (!old.isEmpty()) to.putString(TAG, old);
+        if (!from.getString(TAG_EYES).isEmpty()) to.putString(TAG_EYES, from.getString(TAG_EYES));
+        if (from.getBoolean(TAG_AWAKENED)) to.putBoolean(TAG_AWAKENED, true);
+        if (from.contains(TAG_SEL)) to.putInt(TAG_SEL, from.getInt(TAG_SEL));
         // a cegueira sobrevive a morte: so o Mangekyou do mesmo personagem devolve a visao
         if (from.getInt(TAG_BLIND_MASK) != 0) {
             to.putInt(TAG_BLIND_MASK, from.getInt(TAG_BLIND_MASK));

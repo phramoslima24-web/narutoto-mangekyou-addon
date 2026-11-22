@@ -301,7 +301,7 @@ public final class RinneAbilities {
 
     // ------------------------------------------------ poderes oculares combinados
     private static boolean rinneActive(ServerPlayer p) {
-        return Implants.get(p) == Implant.RINNE && Implants.stage(p) >= 2;
+        return Implants.has(p, Implant.RINNE) && Implants.stage(p) >= 2;
     }
 
     /** Percepcao visual: visao noturna enquanto o Rinne Sharingan esta ativo. */

@@ -31,6 +31,8 @@ public class MangekyouAddon {
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
         ModEntities.ENTITIES.register(modBus);
+        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
+                net.minecraftforge.fml.config.ModConfig.Type.COMMON, MangekyouConfig.SPEC);
         modBus.addListener(this::commonSetup);
         modBus.addListener(ModEntities::onAttributes);
         modBus.addListener(this::addToCreativeTab);

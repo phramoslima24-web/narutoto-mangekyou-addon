@@ -96,5 +96,9 @@
   "entity.narutoto_mangekyou.shisui_susanoo": "Shisui's Susanoo",
   "entity.narutoto_mangekyou.susanoo_projectile": "Susanoo chakra projectile",
   "entity.narutoto_mangekyou.yata_mirror": "Mirror of Yata",
-  "entity.narutoto_mangekyou.susanoo_lance": "Susanoo chakra drill"
+  "entity.narutoto_mangekyou.susanoo_lance": "Susanoo chakra drill",
+  "msg.narutoto_mangekyou.awakened_random": "Your Mangekyou Sharingan awakened: %s! (permanent draw)",
+  "msg.narutoto_mangekyou.eye_already_owned": "You already own the Mangekyou of %s. The item was not consumed.",
+  "msg.narutoto_mangekyou.single_eye": "You only have one implanted eye.",
+  "msg.narutoto_mangekyou.active_eye": "Active eye: %s"
 }

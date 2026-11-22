@@ -88,3 +88,12 @@ Ao o mod invocar o Susanoo do Sasuke (costela, esqueleto, completo, perfeito), o
 - Susanoos do addon nao sao salvos no disco e somem sozinhos (dono/clone/implante mudou, dono offline): sem entidades abandonadas.
 - O Susanoo ORIGINAL do Sasuke continua existindo (invisivel) e mantem todos os poderes (montaria, espada, arco, punhos); o Susanoo do Mangekyou o acompanha como corpo visual e das habilidades novas.
 - Nada foi compilado nem testado no jogo.
+
+## Atualizacao 2.8 - Despertar aleatorio, olhos acumulados, barra automatica
+- **Sorteio unico** (`Implants.awakenLottery`): no primeiro despertar do Mangekyou (`if_sharigan >= 2`) o jogador recebe, ao acaso, Sasuke, Madara, Itachi ou Shisui (`EyeSet.draw`, uniforme). Obito e Rinne nao entram. Resultado salvo em `mkaddon_awakened` + `mkaddon_eyes`; nunca sorteia de novo (morte, relog, reinicio). Quem implantar um olho por item ANTES de despertar nao sorteia (ja tem olho).
+- **Transplante acumulativo**: `mkaddon_eyes` guarda todos os olhos. Implantar nunca remove nada; olho repetido e recusado e o item NAO e consumido (exceto a cura de cegueira, que continua exigindo o olho do mesmo personagem). O olho novo vira o **olho ativo** (aparencia, Susanoo do personagem). **Shift + tecla "trocar jutsu" (H)** alterna o olho ativo.
+- **Uniao de jutsus**: `Implants.owns/abilities` somam os jutsus de todos os olhos, sem duplicar (Amaterasu, Izanagi e Izanami existem uma vez so). Qualquer um funciona com qualquer olho ativo (os de Susanoo exigem o Susanoo do proprio personagem ativo, como antes).
+- **Barra original**: `Implants.grantBar` grava cada jutsu novo em `learned_jutsu` e no primeiro slot livre `jutsu_key1..20` do Narutoto e chama `JutsuSwichNameDisplayProcedure`. Nao cria barra nova, nao remove nada, so adiciona o que ainda nao foi aprendido (roda ao despertar/implantar e a cada 2 s com o Mangekyou ativo). Barra cheia: o jutsu fica aprendido e pode ser posto no slot pelo menu de dojutsu.
+- **Drops configurados** (`config/narutoto_mangekyou-common.toml`): `narutoto:sasuke_npc` 25% (+5%/Pilhagem), `narutoto:itachi_npc` 100% (como antes). **O NarutoTo 0.4.1 nao tem entidade de Madara nem de Shisui**; `extraDrops` (vazia) permite mapear qualquer entidade real, ex.: `"narutoto:uchiha_npc_3|madara|0.03|0.01"`.
+- Corrigido: "Tsukuyomi" era confundido com "Tsukuyomi Infinito" ao checar jutsus aprendidos.
+- Nao compilado nem testado no jogo (ver relatorio).

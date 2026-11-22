@@ -66,10 +66,20 @@ public enum Ability {
         return this == REWIND ? REWIND_LEGACY_NAMES : new String[0];
     }
 
-    /** O texto guardado pelo Narutoto (jutsu_key / learned_jutsu / jutsu_choosed_name) cita este jutsu (nome atual ou antigo)? */
+    /**
+     * O texto guardado pelo Narutoto (jutsu_key / learned_jutsu / jutsu_choosed_name) cita este jutsu (nome atual ou
+     * antigo)? Nomes maiores que contem este (ex.: "Tsukuyomi Infinito" contem "Tsukuyomi") sao descartados antes.
+     */
     public boolean isLearnedIn(String learned) {
         if (learned == null || learned.isEmpty()) return false;
-        if (learned.contains(jutsuName()) || learned.contains(jutsuKey())) return true;
+        String text = learned;
+        String mine = jutsuName();
+        for (Ability o : values()) {
+            if (o == this) continue;
+            String on = o.jutsuName();
+            if (on.length() > mine.length() && on.contains(mine)) text = text.replace(on, "");
+        }
+        if (text.contains(mine) || learned.contains(jutsuKey())) return true;
         for (String l : legacyNames()) if (learned.contains(l)) return true;
         return false;
     }

@@ -65,7 +65,7 @@ public final class RewindHandler {
     }
 
     private static boolean holdsMadaraEye(ServerPlayer p) {
-        return Implants.get(p) == Implant.MADARA;
+        return Implants.has(p, Implant.MADARA);
     }
 
     private static void record(LivingEntity le, long now, Set<UUID> done) {

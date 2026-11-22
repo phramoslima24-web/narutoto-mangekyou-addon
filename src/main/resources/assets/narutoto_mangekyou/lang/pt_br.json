@@ -96,5 +96,9 @@
   "entity.narutoto_mangekyou.shisui_susanoo": "Susanoo do Shisui",
   "entity.narutoto_mangekyou.susanoo_projectile": "Projétil de chakra do Susanoo",
   "entity.narutoto_mangekyou.yata_mirror": "Espelho de Yata",
-  "entity.narutoto_mangekyou.susanoo_lance": "Broca de chakra do Susanoo"
+  "entity.narutoto_mangekyou.susanoo_lance": "Broca de chakra do Susanoo",
+  "msg.narutoto_mangekyou.awakened_random": "Seu Mangekyou Sharingan despertou: %s! (sorteio permanente)",
+  "msg.narutoto_mangekyou.eye_already_owned": "Você já possui o Mangekyou de %s. O item não foi consumido.",
+  "msg.narutoto_mangekyou.single_eye": "Você só tem um olho implantado.",
+  "msg.narutoto_mangekyou.active_eye": "Olho ativo: %s"
 }
