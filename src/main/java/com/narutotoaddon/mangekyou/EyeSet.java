@@ -62,4 +62,16 @@ public final class EyeSet {
         for (Implant i : eyes) if (i.allows(a)) return true;
         return false;
     }
+
+    /** Resultado da checagem de um jutsu de Susanoo exclusivo de um personagem. */
+    public enum Gate { OK, SWITCH_ACTIVE, DENY }
+
+    /**
+     * Regra do Susanoo exclusivo: precisa TER o olho do personagem (qualquer um dos implantados). Se o olho existe
+     * mas outro esta ativo, troca o ativo (nao bloqueia); se nao tem o olho, nega.
+     */
+    public static Gate gate(List<Implant> eyes, Implant active, Implant required) {
+        if (!eyes.contains(required)) return Gate.DENY;
+        return active == required ? Gate.OK : Gate.SWITCH_ACTIVE;
+    }
 }

@@ -97,3 +97,6 @@ Ao o mod invocar o Susanoo do Sasuke (costela, esqueleto, completo, perfeito), o
 - **Drops configurados** (`config/narutoto_mangekyou-common.toml`): `narutoto:sasuke_npc` 25% (+5%/Pilhagem), `narutoto:itachi_npc` 100% (como antes). **O NarutoTo 0.4.1 nao tem entidade de Madara nem de Shisui**; `extraDrops` (vazia) permite mapear qualquer entidade real, ex.: `"narutoto:uchiha_npc_3|madara|0.03|0.01"`.
 - Corrigido: "Tsukuyomi" era confundido com "Tsukuyomi Infinito" ao checar jutsus aprendidos.
 - Nao compilado nem testado no jogo (ver relatorio).
+
+## Correcao 2.8.1 - jutsus de Susanoo do Madara com outro olho ativo
+Bug: depois de implantar o Itachi (que vira o olho ativo), os jutsus de Susanoo do Madara (Yasaka Magatama, Susanoos nos clones) diziam "Seu implante nao permite esse jutsu". Causa: `SusanooAbilities.require()` comparava com o olho ATIVO. Agora exige apenas TER o olho (`EyeSet.gate`): se o olho existe e outro esta ativo, o ativo e trocado para o dono do jutsu (o Susanoo do personagem reaparece em ~2-3 s; use o jutsu de novo); sem o olho continua negado. O menu de dojutsu lista os jutsus de todos os olhos (`SyncImplantPacket` agora envia a lista; protocolo de rede 2).

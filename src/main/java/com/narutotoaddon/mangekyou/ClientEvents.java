@@ -117,7 +117,7 @@ public final class ClientEvents {
         g.drawString(font, Component.translatable("gui.narutoto_mangekyou.title", Component.translatable(imp.nameKey())),
                 x, y, 0xFFFFFF, true);
         y += 14;
-        for (Ability a : imp.abilities) {
+        for (Ability a : EyeSet.abilities(ClientState.myEyes())) {
             boolean hover = e.getMouseX() >= x && e.getMouseX() <= x + BTN_W && e.getMouseY() >= y && e.getMouseY() <= y + BTN_H;
             g.fill(x, y, x + BTN_W, y + BTN_H, hover ? 0xFF7A1010 : 0xFF3A0808);
             g.renderOutline(x, y, BTN_W, BTN_H, 0xFFFF3030);
@@ -134,7 +134,7 @@ public final class ClientEvents {
         Implant imp = ClientState.mine();
         if (imp == null) return;
         int x = originX(s), y = originY(s) + 14;
-        for (Ability a : imp.abilities) {
+        for (Ability a : EyeSet.abilities(ClientState.myEyes())) {
             if (e.getMouseX() >= x && e.getMouseX() <= x + BTN_W && e.getMouseY() >= y && e.getMouseY() <= y + BTN_H) {
                 Net.CH.sendToServer(new LearnJutsuPacket(a.id));
                 e.setCanceled(true);

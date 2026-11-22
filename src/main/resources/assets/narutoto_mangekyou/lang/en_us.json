@@ -100,5 +100,6 @@
   "msg.narutoto_mangekyou.awakened_random": "Your Mangekyou Sharingan awakened: %s! (permanent draw)",
   "msg.narutoto_mangekyou.eye_already_owned": "You already own the Mangekyou of %s. The item was not consumed.",
   "msg.narutoto_mangekyou.single_eye": "You only have one implanted eye.",
-  "msg.narutoto_mangekyou.active_eye": "Active eye: %s"
+  "msg.narutoto_mangekyou.active_eye": "Active eye: %s",
+  "msg.narutoto_mangekyou.eye_switched": "Active eye switched to %s. Wait for its Susanoo to appear and use the jutsu again."
 }

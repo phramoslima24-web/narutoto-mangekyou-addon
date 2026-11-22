@@ -88,7 +88,7 @@ public final class Implants {
         Implant i = get(p);
         Net.CH.send(PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> p),
                 new SyncImplantPacket(p.getUUID(), i == null ? "" : i.id, i == null ? 0 : blindMask(p),
-                        i == null ? "" : blindOwnerId(p)));
+                        i == null ? "" : blindOwnerId(p), EyeSet.write(eyes(p))));
     }
 
     private static void sound(ServerPlayer p, String modSound, SoundEvent fallback, float pitch) {
@@ -199,6 +199,15 @@ public final class Implants {
         grantBar(p);
     }
 
+    /** Define o olho ativo (so entre os que o jogador ja tem). Nao altera a lista de olhos nem os jutsus. */
+    public static boolean activate(ServerPlayer p, Implant eye) {
+        List<Implant> eyes = eyes(p);
+        if (!eyes.contains(eye)) return false;
+        store(p, eyes, eye);
+        sync(p);
+        return true;
+    }
+
     /** Troca o olho ativo (aparencia/Susanoo) entre os ja implantados. Nao mexe em jutsus. */
     public static void cycleActive(ServerPlayer p) {
         List<Implant> eyes = eyes(p);
@@ -208,8 +217,7 @@ public final class Implants {
         }
         Implant cur = get(p);
         Implant next = eyes.get((Math.max(0, eyes.indexOf(cur)) + 1) % eyes.size());
-        store(p, eyes, next);
-        sync(p);
+        activate(p, next);
         p.displayClientMessage(Component.translatable("msg." + MangekyouAddon.MODID + ".active_eye",
                 Component.translatable(next.nameKey())), true);
     }
@@ -357,7 +365,7 @@ public final class Implants {
         if (e.getTarget() instanceof ServerPlayer target && e.getEntity() instanceof ServerPlayer viewer) {
             Implant i = get(target);
             if (i != null) {
-                Net.CH.send(PacketDistributor.PLAYER.with(() -> viewer), new SyncImplantPacket(target.getUUID(), i.id, blindMask(target), blindOwnerId(target)));
+                Net.CH.send(PacketDistributor.PLAYER.with(() -> viewer), new SyncImplantPacket(target.getUUID(), i.id, blindMask(target), blindOwnerId(target), EyeSet.write(eyes(target))));
             }
         }
     }

@@ -9,18 +9,21 @@ public final class ClientState {
     private static final Map<UUID, String> IMPLANTS = new ConcurrentHashMap<>();
     private static final Map<UUID, Integer> BLIND = new ConcurrentHashMap<>();
     private static final Map<UUID, String> BLIND_OWNER = new ConcurrentHashMap<>();
+    private static final Map<UUID, String> EYES = new ConcurrentHashMap<>();
     public static volatile UUID self;
 
     private ClientState() {}
 
-    public static void set(UUID player, String implantId, int blindMask, String blindOwner) {
+    public static void set(UUID player, String implantId, int blindMask, String blindOwner, String eyes) {
         if (implantId == null || implantId.isEmpty()) {
             IMPLANTS.remove(player);
+            EYES.remove(player);
             BLIND.remove(player);
             BLIND_OWNER.remove(player);
             return;
         }
         IMPLANTS.put(player, implantId);
+        EYES.put(player, eyes == null ? "" : eyes);
         if (blindMask == 0) {
             BLIND.remove(player);
             BLIND_OWNER.remove(player);
@@ -43,6 +46,18 @@ public final class ClientState {
     /** Implante que causou a cegueira (o seu Mangekyou define a textura cega); null se nao ha dono. */
     public static Implant blindOwner(UUID player) {
         return player == null ? null : Implant.byId(BLIND_OWNER.get(player));
+    }
+
+    /** Todos os olhos implantados do jogador (inclui o ativo). */
+    public static java.util.List<Implant> eyes(UUID player) {
+        java.util.List<Implant> l = EyeSet.parse(player == null ? "" : EYES.getOrDefault(player, ""));
+        Implant act = get(player);
+        if (act != null) EyeSet.add(l, act);
+        return l;
+    }
+
+    public static java.util.List<Implant> myEyes() {
+        return eyes(self);
     }
 
     public static Implant mine() {

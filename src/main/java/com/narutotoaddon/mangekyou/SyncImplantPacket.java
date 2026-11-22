@@ -12,8 +12,11 @@ public class SyncImplantPacket {
     private final int blindMask;
     /** Implante dono da cegueira (define qual textura cega aparece e qual Mangekyou cura). */
     private final String blindOwner;
+    /** Todos os olhos implantados (CSV), para o menu de dojutsu listar os jutsus de todos eles. */
+    private final String eyes;
 
-    public SyncImplantPacket(UUID player, String id, int blindMask, String blindOwner) {
+    public SyncImplantPacket(UUID player, String id, int blindMask, String blindOwner, String eyes) {
+        this.eyes = eyes == null ? "" : eyes;
         this.player = player;
         this.id = id;
         this.blindMask = blindMask;
@@ -25,14 +28,15 @@ public class SyncImplantPacket {
         buf.writeUtf(m.id);
         buf.writeByte(m.blindMask);
         buf.writeUtf(m.blindOwner);
+        buf.writeUtf(m.eyes);
     }
 
     public static SyncImplantPacket decode(FriendlyByteBuf buf) {
-        return new SyncImplantPacket(buf.readUUID(), buf.readUtf(), buf.readByte(), buf.readUtf());
+        return new SyncImplantPacket(buf.readUUID(), buf.readUtf(), buf.readByte(), buf.readUtf(), buf.readUtf());
     }
 
     public static void handle(SyncImplantPacket m, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> ClientState.set(m.player, m.id, m.blindMask, m.blindOwner));
+        ctx.get().enqueueWork(() -> ClientState.set(m.player, m.id, m.blindMask, m.blindOwner, m.eyes));
         ctx.get().setPacketHandled(true);
     }
 }

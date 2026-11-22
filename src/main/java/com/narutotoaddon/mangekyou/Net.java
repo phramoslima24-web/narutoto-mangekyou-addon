@@ -5,7 +5,7 @@ import net.minecraftforge.network.NetworkRegistry;
 import net.minecraftforge.network.simple.SimpleChannel;
 
 public final class Net {
-    private static final String VERSION = "1";
+    private static final String VERSION = "2";
 
     public static final SimpleChannel CH = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(MangekyouAddon.MODID, "main"), () -> VERSION, VERSION::equals, VERSION::equals);
