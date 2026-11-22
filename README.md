@@ -33,6 +33,13 @@ Cada um existe para o olho **esquerdo** e para o **direito**; o olho usado fica 
 - **Amenominaka** (recarga 2 min, 1000 de chakra): abre por 20 s uma dimensao aleatoria num raio de 12 blocos: **lava**, **gelo**, **gravidade aumentada** ou **tempestade de areia**. Quem lancou fica imune.
 - **Poderes oculares combinados (passivo)**: visao noturna e 25% de chance de prever e desviar de golpes de outras entidades, enquanto o Rinne Sharingan estiver ativo (estagio 2).
 
+## Mangekyou do Sasuke (drop do Sasuke do Narutoto) - 2.7.0
+- Novo implante **Sasuke** (`narutoto_mangekyou:mangekyou_sasuke`), no mesmo sistema dos outros Mangekyous: botao direito = implante, aparece na aba criativa do Narutoto, jutsus no menu de dojutsu, teclas G/H, olhos desenhados por `EyeLayer`.
+- **Drop:** ao derrotar o `narutoto:sasuke_npc` (jogador como autor), `EyeDrops` solta o Mangekyou do Sasuke com **25%** de chance (+5% por nivel de Pilhagem). Os drops originais do Sasuke (ex.: Sharingan Eyeball) nao foram alterados. Ajuste `SASUKE_DROP_CHANCE` / `SASUKE_LOOTING_BONUS` em `EyeDrops.java`.
+- **Poderes:** Susanoo **original do Narutoto** (continua intacto: o Sasuke nao tem `SusanooKind`) + **Novo Amaterasu**. Sem Izanagi/Izanami, entao nao cega.
+- **Visual:** icone e olhos (estagio 2) e olhos eternos (estagio 3) sao recortes das texturas originais do Narutoto (`mangekyou_sasuke.png`, `eternal_sasuke.png`, `mangekyou_sharingan_sasuke_icon.png`), no mesmo formato dos outros personagens.
+- Nao foi compilado nem testado no jogo (sem Forge/rede no ambiente de edicao): gere o jar pelo workflow `build-jar`.
+
 ## Gerar o .jar
 - **GitHub Actions:** suba esta pasta num repositorio, rode o workflow `build-jar` e baixe o artefato.
 - **Local:** JDK 17 + Gradle 8.1.1, `gradle build`; jar em `build/libs`.
@@ -60,3 +67,24 @@ O Narutoto guarda o **nome traduzido** do jutsu (`jutsu_key`, `learned_jutsu`, `
 - Nada foi compilado nem testado no jogo.
 
 - **Correcao do Rewind**: so pode ser usado com os 101 registros seguidos (exatamente 100 ticks = 5 s); depois de usar, o historico e zerado e precisa acumular os 101 de novo. Buracos no historico (troca de dimensao, morte) reiniciam a contagem. Seres ao redor sem os 101 registros nao sao movidos.
+
+## Atualizacao 2.5 - Susanoos exclusivos (Madara, Itachi, Shisui)
+**Requer GeckoLib 4.x** (o Narutoto ja usa). Nao ha habilidade nova de ativar Susanoo: usa-se a **original do mod**.
+Ao o mod invocar o Susanoo do Sasuke (costela, esqueleto, completo, perfeito), o addon olha o **implante equipado**
+(`Implants.get`, sincronizado ao cliente) e troca pela versao do personagem, no mesmo estagio:
+
+| Mangekyou | Susanoo | Habilidades (menu de dojutsu / tecla G e H) |
+|---|---|---|
+| Madara | azul-escuro | **Yasaka Magatama** (3 magatamas explosivos, cratera, onda de choque); **Susanoos nos clones** (liga/desliga) |
+| Itachi | dourado | **Espelho de Yata** (escudo que reflete projeteis, absorve chakra, bloqueia golpes e dano elemental); **Joia Yasaka Magatama** (3 discos perfurantes) |
+| Shisui | verde | **Tsukumo** (84 agulhas; com Katon recente ficam em chamas e +57% de dano); **Broca/Lanca** (liga; clique esquerdo = estocada que atravessa) |
+| Sasuke / sem implante | original | nada muda |
+
+- Cada personagem tem 3 tipos de entidade proprios, 4 estagios com **modelo, animacoes, textura e mascara de brilho proprios**
+  (`geo/<personagem>_susanoo_<estagio>.geo.json`, `textures/entity/<personagem>_susanoo_<estagio>.png`).
+- As habilidades so funcionam com o **Susanoo do mesmo personagem ativo** e custam chakra/recarga independentes (`Ability.java`).
+- **Clones**: o mod nao tem "clone de madeira"; foi usado o **Clone das Sombras** (`clone_new` / `sage_clone`). Cada clone recebe um Susanoo (estagio completo) que o segue; some quando o clone morre/expira. O limite e o do mod (chakra + 5), no maximo 12.
+- Fogo (Katon) compativel com o Tsukumo: Bola de Fogo, Grande Dragao de Fogo, Hosenka, Grande Rajada de Chamas, Grande Aniquilacao, Bomba de Oleo de Sapo, Ocultacao em Cinzas (lancados ate 5 s antes ou durante a rajada).
+- Susanoos do addon nao sao salvos no disco e somem sozinhos (dono/clone/implante mudou, dono offline): sem entidades abandonadas.
+- O Susanoo ORIGINAL do Sasuke continua existindo (invisivel) e mantem todos os poderes (montaria, espada, arco, punhos); o Susanoo do Mangekyou o acompanha como corpo visual e das habilidades novas.
+- Nada foi compilado nem testado no jogo.

@@ -69,6 +69,12 @@ public final class AbilityHandler {
             case TIME_STOP -> TimeStopHandler.start(p);
             case IZANAGI_LEFT, IZANAGI_RIGHT -> IzanagiHandler.arm(p, a.eye);
             case IZANAMI_LEFT, IZANAMI_RIGHT -> IzanamiHandler.cast(p, a);
+            case YASAKA_MAGATAMA -> SusanooAbilities.yasakaMagatama(p);
+            case SUSANOO_CLONES -> SusanooAbilities.cloneSusanoos(p);
+            case YATA_MIRROR -> SusanooAbilities.yataMirror(p);
+            case YASAKA_JEWEL -> SusanooAbilities.yasakaJewel(p);
+            case TSUKUMO -> SusanooAbilities.tsukumo(p);
+            case DRILL_LANCE -> SusanooAbilities.drillLance(p);
             case MUGEN_TSUKUYOMI -> RinneAbilities.mugenTsukuyomi(p);
             case SHINJU_ROOTS -> RinneAbilities.shinjuRoots(p);
             case AMENOMINAKA -> RinneAbilities.amenominaka(p);

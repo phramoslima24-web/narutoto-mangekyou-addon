@@ -16,6 +16,7 @@ public final class Net {
         int id = 0;
         CH.registerMessage(id++, SyncImplantPacket.class, SyncImplantPacket::encode, SyncImplantPacket::decode, SyncImplantPacket::handle);
         CH.registerMessage(id++, LearnJutsuPacket.class, LearnJutsuPacket::encode, LearnJutsuPacket::decode, LearnJutsuPacket::handle);
+        CH.registerMessage(id++, SusanooActionPacket.class, SusanooActionPacket::encode, SusanooActionPacket::decode, SusanooActionPacket::handle);
         CH.registerMessage(id++, UseJutsuPacket.class, UseJutsuPacket::encode, UseJutsuPacket::decode, UseJutsuPacket::handle);
     }
 }

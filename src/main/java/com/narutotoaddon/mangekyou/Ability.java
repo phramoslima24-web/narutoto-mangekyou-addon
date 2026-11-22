@@ -14,6 +14,13 @@ public enum Ability {
     IZANAGI_RIGHT("izanagi_right", 12000, 0, Eye.RIGHT),
     IZANAMI_LEFT("izanami_left", 6000, 0, Eye.LEFT),
     IZANAMI_RIGHT("izanami_right", 6000, 0, Eye.RIGHT),
+    // Susanoos exclusivos de cada Mangekyou (exigem o Susanoo do proprio personagem ativo)
+    YASAKA_MAGATAMA("yasaka_magatama", 400, 600, Eye.ANY),
+    SUSANOO_CLONES("susanoo_clones", 1200, 500, Eye.ANY),
+    YATA_MIRROR("yata_mirror", 600, 500, Eye.ANY),
+    YASAKA_JEWEL("yasaka_jewel", 300, 400, Eye.ANY),
+    TSUKUMO("tsukumo", 500, 450, Eye.ANY),
+    DRILL_LANCE("drill_lance", 800, 350, Eye.ANY),
     // Rinne Sharingan: custam chakra do Narutoto
     MUGEN_TSUKUYOMI("mugen_tsukuyomi", 6000, 2000, Eye.ANY),
     SHINJU_ROOTS("shinju_roots", 600, 500, Eye.ANY),

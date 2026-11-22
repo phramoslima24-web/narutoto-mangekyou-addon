@@ -4,7 +4,7 @@ plugins {
     id 'net.minecraftforge.gradle' version '[6.0,6.2)'
 }
 
-version = '2.3.0'
+version = '2.7.0'
 group = 'com.narutotoaddon.mangekyou'
 
 base {
@@ -34,10 +34,13 @@ minecraft {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 repositories {
+    // GeckoLib (modelos e animacoes dos Susanoos)
+    maven { url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
 }
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.20.1-47.2.0'
+    implementation fg.deobf('software.bernie.geckolib:geckolib-forge-1.20.1:4.4.9')
     // O addon NAO precisa do jar do narutoto para compilar (so usa a chave da aba criativa dele).
 }
 

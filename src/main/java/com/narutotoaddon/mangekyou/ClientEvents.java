@@ -47,6 +47,12 @@ public final class ClientEvents {
 
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers e) {
         e.registerEntityRenderer(ModEntities.IZANAGI_BODY.get(), IzanagiBodyRenderer::new);
+        e.registerEntityRenderer(ModEntities.MADARA_SUSANOO.get(), SusanooRenderer::new);
+        e.registerEntityRenderer(ModEntities.ITACHI_SUSANOO.get(), SusanooRenderer::new);
+        e.registerEntityRenderer(ModEntities.SHISUI_SUSANOO.get(), SusanooRenderer::new);
+        e.registerEntityRenderer(ModEntities.SUSANOO_PROJECTILE.get(), SusanooProjectileRenderer::new);
+        e.registerEntityRenderer(ModEntities.YATA_MIRROR.get(), YataMirrorRenderer::new);
+        e.registerEntityRenderer(ModEntities.SUSANOO_LANCE.get(), SusanooLanceRenderer::new);
     }
 
     /**
@@ -136,6 +142,21 @@ public final class ClientEvents {
             }
             y += GAP;
         }
+    }
+
+    /** Com a broca/lanca ativa, o clique de ataque vira estocada (servidor processa dano e cooldown). */
+    @SubscribeEvent
+    public static void onAttackKey(net.minecraftforge.client.event.InputEvent.InteractionKeyMappingTriggered e) {
+        if (!e.isAttack()) return;
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.level == null || mc.screen != null) return;
+        if (ClientState.mine() != Implant.SHISUI) return;
+        boolean lance = !mc.level.getEntitiesOfClass(CharacterSusanoo.class, mc.player.getBoundingBox().inflate(96.0D),
+                s -> !s.isClone() && s.isLanceActive() && mc.player.getUUID().equals(s.getOwnerUUID())).isEmpty();
+        if (!lance) return;
+        Net.CH.sendToServer(new SusanooActionPacket(SusanooActionPacket.ATTACK));
+        e.setCanceled(true);
+        e.setSwingHand(false);
     }
 
     private static KeyMapping findKey() {
