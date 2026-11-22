@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 
@@ -95,6 +96,66 @@ public final class Bridge {
             if (v != null) v.getClass().getMethod("syncPlayerVariables", Entity.class).invoke(v, e);
         } catch (Throwable t) {
             System.err.println("[narutoto_mangekyou] sync falhou: " + t);
+        }
+    }
+
+    public static boolean getBool(Entity e, String name, boolean def) {
+        try {
+            Object v = vars(e);
+            return v == null ? def : field(v, name).getBoolean(v);
+        } catch (Throwable t) {
+            return def;
+        }
+    }
+
+    public static boolean setBool(Entity e, String name, boolean value) {
+        try {
+            Object v = vars(e);
+            if (v == null) return false;
+            field(v, name).setBoolean(v, value);
+            return true;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /** Chama um procedure estatico do Narutoto do tipo execute(LevelAccessor, Entity). */
+    public static void callProcedureWorld(String simpleName, Entity e) {
+        try {
+            Class.forName("net.mcreator.narutoto.procedures." + simpleName)
+                    .getMethod("execute", LevelAccessor.class, Entity.class).invoke(null, e.level(), e);
+        } catch (Throwable t) {
+            System.err.println("[narutoto_mangekyou] " + simpleName + " falhou: " + t);
+        }
+    }
+
+    /** Chama um procedure estatico do Narutoto do tipo execute(LevelAccessor, Entity alvo, Entity origem). */
+    public static void callProcedureWorld(String simpleName, Entity target, Entity source) {
+        try {
+            Class.forName("net.mcreator.narutoto.procedures." + simpleName)
+                    .getMethod("execute", LevelAccessor.class, Entity.class, Entity.class)
+                    .invoke(null, source.level(), target, source);
+        } catch (Throwable t) {
+            System.err.println("[narutoto_mangekyou] " + simpleName + " falhou: " + t);
+        }
+    }
+
+    /**
+     * Roda um trecho do Narutoto com o estagio do dojutsu (e, se informado, o dono do Mangekyou) trocados so por esse
+     * instante. Serve para o Kamui ORIGINAL (que so aceita o Mangekyou comum, estagio 2) funcionar tambem no
+     * Mangekyou Eterno e no Rinnegan. Os valores originais sao sempre restaurados e sincronizados.
+     */
+    public static void withState(Entity e, double stage, String owner, Runnable r) {
+        double oldStage = getDouble(e, "if_sharigan", stage);
+        String oldOwner = getString(e, "mangekyo_owner", "");
+        setDouble(e, "if_sharigan", stage);
+        if (owner != null) setString(e, "mangekyo_owner", owner);
+        try {
+            r.run();
+        } finally {
+            setDouble(e, "if_sharigan", oldStage);
+            setString(e, "mangekyo_owner", oldOwner);
+            sync(e);
         }
     }
 

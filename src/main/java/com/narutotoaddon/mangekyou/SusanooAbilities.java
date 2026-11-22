@@ -22,23 +22,11 @@ public final class SusanooAbilities {
         p.displayClientMessage(Component.translatable("msg." + MangekyouAddon.MODID + "." + key, a), true);
     }
 
-    /**
-     * Susanoo do personagem certo, ativo e do proprio jogador; senao avisa. Vale para QUALQUER olho implantado:
-     * se o jogador tem o olho mas outro esta ativo, o olho ativo e trocado para o dono do jutsu (o Susanoo do
-     * personagem aparece em poucos segundos) e o jogador usa o jutsu de novo. Sem o olho: recusa.
-     */
+    /** Susanoo do personagem certo, ativo e do proprio jogador; senao avisa. */
     private static CharacterSusanoo require(ServerPlayer p, SusanooKind k) {
-        switch (EyeSet.gate(Implants.eyes(p), Implants.get(p), k.implant)) {
-            case DENY -> {
-                msg(p, "wrong_implant");
-                return null;
-            }
-            case SWITCH_ACTIVE -> {
-                Implants.activate(p, k.implant);
-                msg(p, "eye_switched", Component.translatable(k.implant.nameKey()));
-                return null;
-            }
-            default -> { }
+        if (SusanooKind.of(p) != k) {
+            msg(p, "wrong_implant");
+            return null;
         }
         CharacterSusanoo s = SusanooManager.find(p, k);
         if (s == null) msg(p, "need_susanoo");

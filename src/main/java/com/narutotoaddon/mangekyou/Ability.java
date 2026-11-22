@@ -24,7 +24,17 @@ public enum Ability {
     // Rinne Sharingan: custam chakra do Narutoto
     MUGEN_TSUKUYOMI("mugen_tsukuyomi", 6000, 2000, Eye.ANY),
     SHINJU_ROOTS("shinju_roots", 600, 500, Eye.ANY),
-    AMENOMINAKA("amenominaka", 2400, 1000, Eye.ANY);
+    AMENOMINAKA("amenominaka", 2400, 1000, Eye.ANY),
+    // Obito Uchiha: o Kamui e o ORIGINAL do Narutoto (mesmos jutsus, mesmas chaves, mesma dimensao Kamui).
+    // O addon so garante que funcionem tambem no Mangekyou Eterno e no Rinnegan (ver NativeKamui).
+    KAMUI_INTANGIBLE("kamui_intangible", 0, 0, Eye.ANY, "jutsu.kamui_intangible"),
+    KAMUI_TRANSFER_WHOLE("kamui_transfer_whole", 0, 0, Eye.ANY, "jutsu.kamui_transfer_whole"),
+    KAMUI_TRANSFER_PART("kamui_transfer_part", 0, 0, Eye.ANY, "jutsu.kamui_transfer_part"),
+    // Obito: modos (liga/desliga) e Esferas da Busca da Verdade
+    MODE_TOBI("mode_tobi", 100, 100, Eye.ANY),
+    MODE_WAR("mode_war", 100, 300, Eye.ANY),
+    MODE_JINCHUURIKI("mode_jinchuuriki", 100, 800, Eye.ANY),
+    TRUTH_SEEKING_BALLS("truth_seeking_balls", 400, 600, Eye.ANY);
 
     /** Olho exigido (bitmask: 1 = esquerdo, 2 = direito, 0 = qualquer um que ainda enxergue). */
     public static final class Eye {
@@ -39,12 +49,24 @@ public enum Ability {
     public final int cooldownTicks;
     public final int chakraCost;
     public final int eye;
+    /** Chave de traducao de um jutsu ORIGINAL do Narutoto (null para os jutsus do proprio addon). */
+    public final String nativeKey;
 
     Ability(String id, int cooldownTicks, int chakraCost, int eye) {
+        this(id, cooldownTicks, chakraCost, eye, null);
+    }
+
+    Ability(String id, int cooldownTicks, int chakraCost, int eye, String nativeKey) {
         this.id = id;
         this.cooldownTicks = cooldownTicks;
         this.chakraCost = chakraCost;
         this.eye = eye;
+        this.nativeKey = nativeKey;
+    }
+
+    /** Jutsu que o Narutoto ja executa sozinho (so o addon cobre os casos que o original recusa). */
+    public boolean isNative() {
+        return nativeKey != null;
     }
 
     /** O Narutoto guarda o NOME TRADUZIDO do jutsu (jutsu_key, learned_jutsu, jutsu_choosed_name). */
@@ -53,7 +75,7 @@ public enum Ability {
     }
 
     public String jutsuKey() {
-        return JUTSU_PREFIX + id;
+        return nativeKey != null ? nativeKey : JUTSU_PREFIX + id;
     }
 
     /**
@@ -66,20 +88,10 @@ public enum Ability {
         return this == REWIND ? REWIND_LEGACY_NAMES : new String[0];
     }
 
-    /**
-     * O texto guardado pelo Narutoto (jutsu_key / learned_jutsu / jutsu_choosed_name) cita este jutsu (nome atual ou
-     * antigo)? Nomes maiores que contem este (ex.: "Tsukuyomi Infinito" contem "Tsukuyomi") sao descartados antes.
-     */
+    /** O texto guardado pelo Narutoto (jutsu_key / learned_jutsu / jutsu_choosed_name) cita este jutsu (nome atual ou antigo)? */
     public boolean isLearnedIn(String learned) {
         if (learned == null || learned.isEmpty()) return false;
-        String text = learned;
-        String mine = jutsuName();
-        for (Ability o : values()) {
-            if (o == this) continue;
-            String on = o.jutsuName();
-            if (on.length() > mine.length() && on.contains(mine)) text = text.replace(on, "");
-        }
-        if (text.contains(mine) || learned.contains(jutsuKey())) return true;
+        if (learned.contains(jutsuName()) || learned.contains(jutsuKey())) return true;
         for (String l : legacyNames()) if (learned.contains(l)) return true;
         return false;
     }

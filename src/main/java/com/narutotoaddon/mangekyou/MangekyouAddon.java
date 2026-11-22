@@ -31,8 +31,6 @@ public class MangekyouAddon {
         ModBlocks.BLOCKS.register(modBus);
         ModItems.ITEMS.register(modBus);
         ModEntities.ENTITIES.register(modBus);
-        net.minecraftforge.fml.ModLoadingContext.get().registerConfig(
-                net.minecraftforge.fml.config.ModConfig.Type.COMMON, MangekyouConfig.SPEC);
         modBus.addListener(this::commonSetup);
         modBus.addListener(ModEntities::onAttributes);
         modBus.addListener(this::addToCreativeTab);
@@ -45,6 +43,8 @@ public class MangekyouAddon {
         MinecraftForge.EVENT_BUS.register(IzanagiHandler.class);
         MinecraftForge.EVENT_BUS.register(IzanamiHandler.class);
         MinecraftForge.EVENT_BUS.register(EyeDrops.class);
+        MinecraftForge.EVENT_BUS.register(ObitoHandler.class);
+        MinecraftForge.EVENT_BUS.register(NativeKamui.class);
         MinecraftForge.EVENT_BUS.register(SusanooManager.class);
         MinecraftForge.EVENT_BUS.register(SusanooTasks.class);
         MinecraftForge.EVENT_BUS.register(YataHandler.class);
@@ -79,6 +79,7 @@ public class MangekyouAddon {
             event.accept(ModItems.MANGEKYOU_SHISUI);
             event.accept(ModItems.MANGEKYOU_MADARA);
             event.accept(ModItems.MANGEKYOU_SASUKE);
+            event.accept(ModItems.MANGEKYOU_OBITO);
             event.accept(ModItems.RINNE_SHARINGAN);
         }
     }

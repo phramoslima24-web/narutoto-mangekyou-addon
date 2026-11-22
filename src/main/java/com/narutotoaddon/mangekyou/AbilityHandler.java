@@ -23,12 +23,17 @@ public final class AbilityHandler {
     }
 
     public static void use(ServerPlayer p, Ability a) {
-        if (a == null || !Implants.owns(p, a)) {
+        if (!Implants.allows(p, a)) {
             msg(p, "wrong_implant");
             return;
         }
         if (!Implants.mangekyouActive(p)) {
             msg(p, "need_mangekyou");
+            return;
+        }
+        // Jutsus ORIGINAIS do Narutoto (Kamui): o proprio Narutoto executa; o addon so cobre Eterno/Rinnegan
+        if (a.isNative()) {
+            NativeKamui.use(p, a);
             return;
         }
         // Shift + Novo Amaterasu: apaga todos os fogos pretos (sem recarga)
@@ -77,6 +82,9 @@ public final class AbilityHandler {
             case MUGEN_TSUKUYOMI -> RinneAbilities.mugenTsukuyomi(p);
             case SHINJU_ROOTS -> RinneAbilities.shinjuRoots(p);
             case AMENOMINAKA -> RinneAbilities.amenominaka(p);
+            case MODE_TOBI, MODE_WAR, MODE_JINCHUURIKI -> ObitoHandler.toggleMode(p, a);
+            case TRUTH_SEEKING_BALLS -> ObitoHandler.truthSeekingBalls(p);
+            case KAMUI_INTANGIBLE, KAMUI_TRANSFER_WHOLE, KAMUI_TRANSFER_PART -> false; // tratados acima (nativos)
         };
         if (ok) {
             p.getPersistentData().putLong(cdKey(a), now + a.cooldownTicks);

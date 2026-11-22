@@ -53,6 +53,10 @@ public class ImplantItem extends Item {
         if (implant.allows(Ability.NOVO_AMATERASU)) {
             tooltip.add(Component.translatable("tooltip." + MangekyouAddon.MODID + ".help").withStyle(ChatFormatting.DARK_GRAY));
         }
+        if (implant == Implant.OBITO) {
+            tooltip.add(Component.translatable("tooltip." + MangekyouAddon.MODID + ".obito_kamui").withStyle(ChatFormatting.DARK_PURPLE));
+            tooltip.add(Component.translatable("tooltip." + MangekyouAddon.MODID + ".obito_modes").withStyle(ChatFormatting.DARK_PURPLE));
+        }
         if (implant == Implant.MADARA) {
             tooltip.add(Component.translatable("tooltip." + MangekyouAddon.MODID + ".madara_rewind").withStyle(ChatFormatting.DARK_PURPLE));
             tooltip.add(Component.translatable("tooltip." + MangekyouAddon.MODID + ".madara_timestop").withStyle(ChatFormatting.DARK_PURPLE));

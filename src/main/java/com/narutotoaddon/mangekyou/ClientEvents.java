@@ -6,6 +6,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.network.chat.Component;
 import net.minecraft.client.renderer.entity.player.PlayerRenderer;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -94,7 +97,10 @@ public final class ClientEvents {
     }
 
     private static boolean isDojutsuScreen(Screen s) {
-        return s != null && s.getClass().getName().endsWith("DojutsuBoardScreen");
+        if (s == null) return false;
+        String n = s.getClass().getName();
+        // tela de dojutsu e tela da barra de jutsus (slots) do Narutoto
+        return n.endsWith("DojutsuBoardScreen") || n.endsWith("JutsuBoardScreen");
     }
 
     private static int originX(Screen s) {
@@ -103,6 +109,25 @@ public final class ClientEvents {
 
     private static int originY(Screen s) {
         return s instanceof AbstractContainerScreen<?> cs ? cs.getGuiTop() + 6 : s.height / 2 - 60;
+    }
+
+    /** Linha do menu: trocar o olho ativo ou colocar um jutsu na barra. */
+    private record Row(Implant eye, Ability ability) {}
+
+    private static int scroll;
+
+    private static List<Row> rows() {
+        List<Row> out = new ArrayList<>();
+        List<Implant> owned = ClientState.myOwned();
+        if (owned.size() > 1) for (Implant i : owned) out.add(new Row(i, null));
+        java.util.Set<Ability> seen = new java.util.LinkedHashSet<>();
+        for (Implant i : owned) for (Ability a : i.abilities) seen.add(a);
+        for (Ability a : seen) out.add(new Row(null, a));
+        return out;
+    }
+
+    private static int visibleRows(Screen s) {
+        return Math.max(3, (s.height - originY(s) - 34) / GAP);
     }
 
     @SubscribeEvent
@@ -114,29 +139,48 @@ public final class ClientEvents {
         GuiGraphics g = e.getGuiGraphics();
         var font = Minecraft.getInstance().font;
         int x = originX(s), y = originY(s);
-        g.drawString(font, Component.translatable("gui.narutoto_mangekyou.title", Component.translatable(imp.nameKey())),
+        g.drawString(font, Component.translatable("gui.narutoto_mangekyou.eye", Component.translatable(imp.nameKey())),
                 x, y, 0xFFFFFF, true);
         y += 14;
-        for (Ability a : EyeSet.abilities(ClientState.myEyes())) {
+        List<Row> rows = rows();
+        int vis = visibleRows(s);
+        scroll = Math.max(0, Math.min(scroll, Math.max(0, rows.size() - vis)));
+        for (int i = scroll; i < Math.min(rows.size(), scroll + vis); i++) {
+            Row r = rows.get(i);
             boolean hover = e.getMouseX() >= x && e.getMouseX() <= x + BTN_W && e.getMouseY() >= y && e.getMouseY() <= y + BTN_H;
-            g.fill(x, y, x + BTN_W, y + BTN_H, hover ? 0xFF7A1010 : 0xFF3A0808);
-            g.renderOutline(x, y, BTN_W, BTN_H, 0xFFFF3030);
-            g.drawCenteredString(font, Component.translatable("gui.narutoto_mangekyou.learn", Component.translatable(a.jutsuKey())),
-                    x + BTN_W / 2, y + 6, 0xFFFFFF);
+            boolean active = r.eye() != null && r.eye() == imp;
+            g.fill(x, y, x + BTN_W, y + BTN_H, hover ? 0xFF7A1010 : (active ? 0xFF5A1A1A : 0xFF3A0808));
+            g.renderOutline(x, y, BTN_W, BTN_H, active ? 0xFFFFD040 : 0xFFFF3030);
+            Component label = r.eye() != null
+                    ? Component.translatable("gui.narutoto_mangekyou.eye", Component.translatable(r.eye().nameKey()))
+                    : Component.translatable("gui.narutoto_mangekyou.learn", Component.translatable(r.ability().jutsuKey()));
+            g.drawCenteredString(font, label, x + BTN_W / 2, y + 6, 0xFFFFFF);
             y += GAP;
         }
+    }
+
+    @SubscribeEvent
+    public static void onScroll(ScreenEvent.MouseScrolled.Pre e) {
+        if (!isDojutsuScreen(e.getScreen()) || ClientState.mine() == null) return;
+        int total = rows().size(), vis = visibleRows(e.getScreen());
+        if (total <= vis) return;
+        scroll = Math.max(0, Math.min(total - vis, scroll + (e.getScrollDelta() > 0 ? -1 : 1)));
+        e.setCanceled(true);
     }
 
     @SubscribeEvent
     public static void onClick(ScreenEvent.MouseButtonPressed.Pre e) {
         Screen s = e.getScreen();
         if (!isDojutsuScreen(s) || e.getButton() != 0) return;
-        Implant imp = ClientState.mine();
-        if (imp == null) return;
+        if (ClientState.mine() == null) return;
         int x = originX(s), y = originY(s) + 14;
-        for (Ability a : EyeSet.abilities(ClientState.myEyes())) {
+        List<Row> rows = rows();
+        int vis = visibleRows(s);
+        for (int i = scroll; i < Math.min(rows.size(), scroll + vis); i++) {
             if (e.getMouseX() >= x && e.getMouseX() <= x + BTN_W && e.getMouseY() >= y && e.getMouseY() <= y + BTN_H) {
-                Net.CH.sendToServer(new LearnJutsuPacket(a.id));
+                Row r = rows.get(i);
+                if (r.eye() != null) Net.CH.sendToServer(new SelectEyePacket(r.eye().id));
+                else Net.CH.sendToServer(new LearnJutsuPacket(r.ability().id));
                 e.setCanceled(true);
                 return;
             }

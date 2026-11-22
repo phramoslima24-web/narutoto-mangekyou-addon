@@ -10,7 +10,13 @@ public enum Implant {
             Ability.IZANAGI_LEFT, Ability.IZANAGI_RIGHT, Ability.IZANAMI_LEFT, Ability.IZANAMI_RIGHT),
     // Sasuke: Susanoo original do Narutoto (intacto) + Amaterasu. Sem Izanagi/Izanami, entao nao cega.
     SASUKE("sasuke", Ability.NOVO_AMATERASU),
+    // Obito: Kamui ORIGINAL do Narutoto + modos (Tobi, Obito da Guerra, Jinchuuriki do Dez Caudas) + Esferas da Busca da Verdade
+    OBITO("obito", Ability.KAMUI_INTANGIBLE, Ability.KAMUI_TRANSFER_WHOLE, Ability.KAMUI_TRANSFER_PART,
+            Ability.MODE_TOBI, Ability.MODE_WAR, Ability.MODE_JINCHUURIKI, Ability.TRUTH_SEEKING_BALLS),
     RINNE("rinne", Ability.MUGEN_TSUKUYOMI, Ability.SHINJU_ROOTS, Ability.AMENOMINAKA);
+
+    /** Os cinco Mangekyous que podem ser sorteados no primeiro despertar. */
+    public static final Implant[] LOTTERY = {OBITO, SASUKE, MADARA, ITACHI, SHISUI};
 
     public final String id;
     public final Ability[] abilities;

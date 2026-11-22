@@ -6,21 +6,22 @@ import java.util.function.Supplier;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraftforge.network.NetworkEvent;
 
+/** Servidor -> cliente: olho ativo, todos os olhos possuidos e a cegueira de um jogador. */
 public class SyncImplantPacket {
     private final UUID player;
     private final String id;
     private final int blindMask;
     /** Implante dono da cegueira (define qual textura cega aparece e qual Mangekyou cura). */
     private final String blindOwner;
-    /** Todos os olhos implantados (CSV), para o menu de dojutsu listar os jutsus de todos eles. */
-    private final String eyes;
+    /** Todos os olhos possuidos (ids separados por virgula): o menu de dojutsu mostra os jutsus de todos eles. */
+    private final String owned;
 
-    public SyncImplantPacket(UUID player, String id, int blindMask, String blindOwner, String eyes) {
-        this.eyes = eyes == null ? "" : eyes;
+    public SyncImplantPacket(UUID player, String id, int blindMask, String blindOwner, String owned) {
         this.player = player;
         this.id = id;
         this.blindMask = blindMask;
         this.blindOwner = blindOwner == null ? "" : blindOwner;
+        this.owned = owned == null ? "" : owned;
     }
 
     public static void encode(SyncImplantPacket m, FriendlyByteBuf buf) {
@@ -28,7 +29,7 @@ public class SyncImplantPacket {
         buf.writeUtf(m.id);
         buf.writeByte(m.blindMask);
         buf.writeUtf(m.blindOwner);
-        buf.writeUtf(m.eyes);
+        buf.writeUtf(m.owned);
     }
 
     public static SyncImplantPacket decode(FriendlyByteBuf buf) {
@@ -36,7 +37,7 @@ public class SyncImplantPacket {
     }
 
     public static void handle(SyncImplantPacket m, Supplier<NetworkEvent.Context> ctx) {
-        ctx.get().enqueueWork(() -> ClientState.set(m.player, m.id, m.blindMask, m.blindOwner, m.eyes));
+        ctx.get().enqueueWork(() -> ClientState.set(m.player, m.id, m.blindMask, m.blindOwner, m.owned));
         ctx.get().setPacketHandled(true);
     }
 }

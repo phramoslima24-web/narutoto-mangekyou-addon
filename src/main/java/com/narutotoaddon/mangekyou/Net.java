@@ -18,5 +18,6 @@ public final class Net {
         CH.registerMessage(id++, LearnJutsuPacket.class, LearnJutsuPacket::encode, LearnJutsuPacket::decode, LearnJutsuPacket::handle);
         CH.registerMessage(id++, SusanooActionPacket.class, SusanooActionPacket::encode, SusanooActionPacket::decode, SusanooActionPacket::handle);
         CH.registerMessage(id++, UseJutsuPacket.class, UseJutsuPacket::encode, UseJutsuPacket::decode, UseJutsuPacket::handle);
+        CH.registerMessage(id++, SelectEyePacket.class, SelectEyePacket::encode, SelectEyePacket::decode, SelectEyePacket::handle);
     }
 }

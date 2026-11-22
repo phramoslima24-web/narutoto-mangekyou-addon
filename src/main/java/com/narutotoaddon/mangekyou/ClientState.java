@@ -9,21 +9,21 @@ public final class ClientState {
     private static final Map<UUID, String> IMPLANTS = new ConcurrentHashMap<>();
     private static final Map<UUID, Integer> BLIND = new ConcurrentHashMap<>();
     private static final Map<UUID, String> BLIND_OWNER = new ConcurrentHashMap<>();
-    private static final Map<UUID, String> EYES = new ConcurrentHashMap<>();
+    private static final Map<UUID, String> OWNED = new ConcurrentHashMap<>();
     public static volatile UUID self;
 
     private ClientState() {}
 
-    public static void set(UUID player, String implantId, int blindMask, String blindOwner, String eyes) {
+    public static void set(UUID player, String implantId, int blindMask, String blindOwner, String owned) {
         if (implantId == null || implantId.isEmpty()) {
+            OWNED.remove(player);
             IMPLANTS.remove(player);
-            EYES.remove(player);
             BLIND.remove(player);
             BLIND_OWNER.remove(player);
             return;
         }
         IMPLANTS.put(player, implantId);
-        EYES.put(player, eyes == null ? "" : eyes);
+        OWNED.put(player, owned == null || owned.isEmpty() ? implantId : owned);
         if (blindMask == 0) {
             BLIND.remove(player);
             BLIND_OWNER.remove(player);
@@ -48,20 +48,24 @@ public final class ClientState {
         return player == null ? null : Implant.byId(BLIND_OWNER.get(player));
     }
 
-    /** Todos os olhos implantados do jogador (inclui o ativo). */
-    public static java.util.List<Implant> eyes(UUID player) {
-        java.util.List<Implant> l = EyeSet.parse(player == null ? "" : EYES.getOrDefault(player, ""));
-        Implant act = get(player);
-        if (act != null) EyeSet.add(l, act);
-        return l;
-    }
-
-    public static java.util.List<Implant> myEyes() {
-        return eyes(self);
-    }
-
     public static Implant mine() {
         return get(self);
+    }
+
+    /** Todos os olhos possuidos por um jogador (o olho ativo e um deles). */
+    public static java.util.List<Implant> owned(UUID player) {
+        java.util.List<Implant> out = new java.util.ArrayList<>();
+        String csv = player == null ? null : OWNED.get(player);
+        if (csv == null) return out;
+        for (String id : csv.split(",")) {
+            Implant i = Implant.byId(id.trim());
+            if (i != null && !out.contains(i)) out.add(i);
+        }
+        return out;
+    }
+
+    public static java.util.List<Implant> myOwned() {
+        return owned(self);
     }
 
     public static int myBlind() {

@@ -17,19 +17,10 @@ public final class ModItems {
             ITEMS.register("mangekyou_madara", () -> new ImplantItem(Implant.MADARA));
     public static final RegistryObject<Item> MANGEKYOU_SASUKE =
             ITEMS.register("mangekyou_sasuke", () -> new ImplantItem(Implant.SASUKE));
+    public static final RegistryObject<Item> MANGEKYOU_OBITO =
+            ITEMS.register("mangekyou_obito", () -> new ImplantItem(Implant.OBITO));
     public static final RegistryObject<Item> RINNE_SHARINGAN =
             ITEMS.register("rinne_sharingan", () -> new ImplantItem(Implant.RINNE));
-
-    /** Item (implante) correspondente a cada olho. */
-    public static Item itemFor(Implant i) {
-        return switch (i) {
-            case ITACHI -> MANGEKYOU_ITACHI.get();
-            case SHISUI -> MANGEKYOU_SHISUI.get();
-            case MADARA -> MANGEKYOU_MADARA.get();
-            case SASUKE -> MANGEKYOU_SASUKE.get();
-            case RINNE -> RINNE_SHARINGAN.get();
-        };
-    }
 
     private ModItems() {}
 }

@@ -1,6 +1,17 @@
-# Narutoto - Mangekyou Addon 2.3 (Forge 1.20.1)
+# Narutoto - Mangekyou Addon 2.8 (Forge 1.20.1)
 
 Requer **Narutoto 0.4.1+**. Nao precisa do jar do Narutoto para compilar.
+
+## Atualizacao 2.8.0 - Despertar aleatorio, olhos acumulativos, Obito completo
+- **Despertar aleatorio (uma unica vez):** ao despertar o Mangekyou (conquista `narutoto:learn_mangekyo_sasuke` ou estagio >= 2) o jogador recebe, sorteado entre **Obito, Sasuke, Madara, Itachi e Shisui**, um olho. O resultado fica salvo para sempre (`mkaddon_awakened`/`mkaddon_drawn`), sobrevive a morte, sair do mundo e reiniciar. Saves antigos que ja tinham implantes nao sorteiam. O `mangekyo_owner` do Narutoto passa a `sasuke` para todos (e o dono que o original deixa evoluir ate Eterno/Rinnegan).
+- **Olhos acumulativos:** cada implante e SOMADO (lista `mkaddon_implants`); nada e apagado e nao ha jutsu duplicado. Olho repetido e recusado (o item nao e consumido), salvo para curar cegueira do mesmo personagem. No menu de dojutsu, o botao *Olho ativo* escolhe a aparencia e o Susanoo.
+- **Barra ORIGINAL de jutsus:** **voce escolhe** quais jutsus e em qual slot, como no jogo: selecione o slot na aba de jutsus e clique no jutsu da lista *Aprender* (aparece na aba de jutsus e na de dojutsu; role com o mouse se a lista for grande). O jutsu e gravado no slot da barra de 20 slots do Narutoto (`jutsu<N>`/`jutsu_key<N>`/`learned_jutsu`), sem barra separada; escolher outro slot MOVE o jutsu (ele nao fica duplicado). Nada e colocado sozinho. Teclas G/H continuam como reserva.
+- **Sasuke:** o `sasuke_npc` agora SEMPRE solta o Mangekyou do Sasuke (`EyeDrops.SASUKE_DROP_CHANCE`, 1.0).
+- **Obito (item `mangekyou_obito`, textura do Mangekyou Eterno fornecida):** Kamui = **o do Narutoto original** (Intangibilidade, Transferencia Total e Parcial, dimensao `narutoto:kamui_dimension`). O addon so chama os mesmos procedimentos nos estagios Eterno (3) e Rinnegan (4), onde o original recusaria (`NativeKamui`). Botao direito em entidade com Intangibilidade solta suga para a dimensao Kamui tambem fora do estagio 2.
+- **Evolucao para Rinnegan:** e a do Sasuke do Narutoto (celulas de Hashirama + Mangekyou Eterno + Rinnegan Count), sem progressao paralela.
+- **Modos do Obito** (`ObitoHandler`; ligar/desligar pela barra): Tobi (dano 1,2x / defesa 1,1x / velocidade 1,5x), Obito da Guerra (1,6/1,5/1,6; exige Eterno), Jinchuuriki do Dez Caudas (2,5/2,2/2,0; exige Rinnegan; voo, +10 de vida, Esferas da Busca da Verdade). Dano e defesa por evento de dano (todo dano do jogador, inclusive jutsus), velocidade/vida por modificadores temporarios; consomem chakra por segundo. Passiva das celulas de Hashirama: -8% de dano recebido (-12% com as celulas do Narutoto) e regeneracao leve.
+- Nada foi compilado nem testado no jogo (sem Forge/rede). Verificacao feita: sintaxe de todo o codigo com o javac do JDK; nomes do Narutoto conferidos no jar e nas fontes.
+
 
 ## Como funciona
 1. Os itens **Mangekyou do Itachi / Shisui / Madara** (aba criativa Narutoto) agora sao **implantes**: botao direito = chat mostra *"Implante concluido!"* e o item e consumido (no criativo nao).
@@ -88,15 +99,3 @@ Ao o mod invocar o Susanoo do Sasuke (costela, esqueleto, completo, perfeito), o
 - Susanoos do addon nao sao salvos no disco e somem sozinhos (dono/clone/implante mudou, dono offline): sem entidades abandonadas.
 - O Susanoo ORIGINAL do Sasuke continua existindo (invisivel) e mantem todos os poderes (montaria, espada, arco, punhos); o Susanoo do Mangekyou o acompanha como corpo visual e das habilidades novas.
 - Nada foi compilado nem testado no jogo.
-
-## Atualizacao 2.8 - Despertar aleatorio, olhos acumulados, barra automatica
-- **Sorteio unico** (`Implants.awakenLottery`): no primeiro despertar do Mangekyou (`if_sharigan >= 2`) o jogador recebe, ao acaso, Sasuke, Madara, Itachi ou Shisui (`EyeSet.draw`, uniforme). Obito e Rinne nao entram. Resultado salvo em `mkaddon_awakened` + `mkaddon_eyes`; nunca sorteia de novo (morte, relog, reinicio). Quem implantar um olho por item ANTES de despertar nao sorteia (ja tem olho).
-- **Transplante acumulativo**: `mkaddon_eyes` guarda todos os olhos. Implantar nunca remove nada; olho repetido e recusado e o item NAO e consumido (exceto a cura de cegueira, que continua exigindo o olho do mesmo personagem). O olho novo vira o **olho ativo** (aparencia, Susanoo do personagem). **Shift + tecla "trocar jutsu" (H)** alterna o olho ativo.
-- **Uniao de jutsus**: `Implants.owns/abilities` somam os jutsus de todos os olhos, sem duplicar (Amaterasu, Izanagi e Izanami existem uma vez so). Qualquer um funciona com qualquer olho ativo (os de Susanoo exigem o Susanoo do proprio personagem ativo, como antes).
-- **Barra original**: `Implants.grantBar` grava cada jutsu novo em `learned_jutsu` e no primeiro slot livre `jutsu_key1..20` do Narutoto e chama `JutsuSwichNameDisplayProcedure`. Nao cria barra nova, nao remove nada, so adiciona o que ainda nao foi aprendido (roda ao despertar/implantar e a cada 2 s com o Mangekyou ativo). Barra cheia: o jutsu fica aprendido e pode ser posto no slot pelo menu de dojutsu.
-- **Drops configurados** (`config/narutoto_mangekyou-common.toml`): `narutoto:sasuke_npc` 25% (+5%/Pilhagem), `narutoto:itachi_npc` 100% (como antes). **O NarutoTo 0.4.1 nao tem entidade de Madara nem de Shisui**; `extraDrops` (vazia) permite mapear qualquer entidade real, ex.: `"narutoto:uchiha_npc_3|madara|0.03|0.01"`.
-- Corrigido: "Tsukuyomi" era confundido com "Tsukuyomi Infinito" ao checar jutsus aprendidos.
-- Nao compilado nem testado no jogo (ver relatorio).
-
-## Correcao 2.8.1 - jutsus de Susanoo do Madara com outro olho ativo
-Bug: depois de implantar o Itachi (que vira o olho ativo), os jutsus de Susanoo do Madara (Yasaka Magatama, Susanoos nos clones) diziam "Seu implante nao permite esse jutsu". Causa: `SusanooAbilities.require()` comparava com o olho ATIVO. Agora exige apenas TER o olho (`EyeSet.gate`): se o olho existe e outro esta ativo, o ativo e trocado para o dono do jutsu (o Susanoo do personagem reaparece em ~2-3 s; use o jutsu de novo); sem o olho continua negado. O menu de dojutsu lista os jutsus de todos os olhos (`SyncImplantPacket` agora envia a lista; protocolo de rede 2).
